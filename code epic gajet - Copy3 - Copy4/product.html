@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: #f5f5f7; margin: 0; }
+        .container { max-width: 900px; margin: 40px auto; background: #fff; border-radius: 18px; box-shadow: 0 4px 32px rgba(0,0,0,0.08); padding: 40px 24px; }
+        .product-header { display: flex; flex-wrap: wrap; gap: 40px; align-items: center; }
+        .product-image { max-width: 340px; width: 100%; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); background: #f5f5f7; }
+        .product-info { flex: 1; min-width: 260px; }
+        .product-title { font-size: 2.2rem; font-weight: 700; margin-bottom: 10px; }
+        .product-price { color: #0071e3; font-size: 1.3rem; font-weight: 700; margin-bottom: 18px; }
+        .add-to-cart { background: #0071e3; color: #fff; border: none; border-radius: 24px; padding: 12px 32px; font-size: 1.08rem; cursor: pointer; transition: background 0.2s, box-shadow 0.2s; box-shadow:0 2px 8px rgba(0,113,227,0.08); font-weight:600; margin-bottom: 18px; }
+        .add-to-cart:hover { background: #005bb5; }
+        .product-description { color: #444; font-size: 1.1rem; margin-bottom: 18px; }
+        .specs-title { font-size: 1.2rem; font-weight: 600; margin: 32px 0 12px 0; }
+        .specs-list { list-style: none; padding: 0; margin: 0; }
+        .specs-list li { padding: 10px 0; border-bottom: 1px solid #eee; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; }
+        .back-link { display:inline-block; margin-bottom: 24px; color:#0071e3; text-decoration:none; font-weight:500; font-size:1.1rem; }
+        .back-link:hover { text-decoration:underline; }
+
+        /* Styles for Colors Section */
+        .colors-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid #eee; }
+        .colors-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; }
+        .color-options { display: flex; gap: 12px; flex-wrap: wrap; }
+        .color-option {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ccc; /* Default border */
+            transition: transform 0.1s ease-in-out, border-color 0.1s ease-in-out;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+         .color-option:hover { transform: scale(1.1); border-color: #0071e3; }
+         /* Add specific styles for colors that need clearer borders */
+         .color-option[style*="background-color: white"], .color-option[style*="background-color: #ffffff"] {
+             border-color: #bbb; /* Darker border for white */
+         }
+        .color-option.selected {
+            border-color: #0071e3; /* Highlight selected color */
+            border-width: 3px;
+        }
+
+        /* Success state for Add to Cart button (copied from store.html) */
+        .add-to-cart.success {
+            background: #34c759; /* Apple Green */
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.2);
+            pointer-events: none; /* Disable clicks during animation */
+        }
+         .add-to-cart.success:hover { background: #34c759; box-shadow: 0 2px 8px rgba(52, 199, 89, 0.2); } /* Keep green on hover */
+
+        @media (max-width: 700px) {
+            .container { padding: 12px 2vw; }
+            .product-header { flex-direction: column; gap: 18px; }
+            .product-title { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="store.html" class="back-link">&larr; Back to Store</a>
+        <div class="product-header">
+            <img src="" alt="Product image" class="product-image" id="product-img">
+            <div class="product-info">
+                <div class="product-title" id="product-title"></div>
+                <div class="product-price" id="product-price"></div>
+                <button class="add-to-cart" id="add-to-cart-btn">Add to Cart</button>
+                <div class="product-description" id="product-desc"></div>
+
+                <!-- New section for colors -->
+                <div class="colors-section">
+                    <div class="colors-title">Available Colors</div>
+                    <div class="color-options" id="color-options"></div>
+                    <div class="selected-color-text" id="selected-color-text"></div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="specs-title">Technical Specifications</div>
+            <ul class="specs-list" id="specs-list"></ul>
+        </div>
+    </div>
+    <script>
+    // Datele extinse pentru toate produsele
+    const products = [
+        {
+            id: 'mac-1',
+            name: 'MacBook Pro 16"',
+            price: 2499,
+            image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=MacBook+Pro',
+            description: 'Apple M2 Pro chip. Supercharged for pros.',
+            specs: [
+                '16.2-inch Liquid Retina XDR display',
+                'Apple M2 Pro chip',
+                '32GB unified memory',
+                '1TB SSD storage',
+                'Up to 22 hours battery life',
+                'Weight: 2.1 kg',
+                'Thunderbolt 4, HDMI, SDXC, MagSafe 3',
+            ],
+            colors: ['Silver', 'Space Gray']
+        },
+        {
+            id: 'mac-2',
+            name: 'MacBook Air 13"',
+            price: 1199,
+            image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=MacBook+Air',
+            description: 'Light. Speed. Power.',
+            specs: [
+                '13.6-inch Liquid Retina display',
+                'Apple M2 chip',
+                '16GB unified memory',
+                '512GB SSD storage',
+                'Up to 18 hours battery life',
+                'Weight: 1.24 kg',
+                'Thunderbolt / USB 4',
+            ],
+            colors: ['Midnight', 'Starlight', 'Space Gray', 'Silver']
+        },
+        {
+            id: 'ipad-1',
+            name: 'iPad Pro',
+            price: 799,
+            image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=iPad+Pro',
+            description: 'Supercharged by M2 chip.',
+            specs: [
+                '12.9-inch Liquid Retina XDR display',
+                'Apple M2 chip',
+                '8GB RAM',
+                '256GB storage',
+                '5G capable',
+                'Face ID',
+                'Weight: 682 g',
+            ],
+            colors: ['Silver', 'Space Gray']
+        },
+        {
+            id: 'ipad-2',
+            name: 'iPad Air',
+            price: 599,
+            image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=iPad+Air',
+            description: 'Light. Bright. Full of might.',
+            specs: [
+                '10.9-inch Liquid Retina display',
+                'Apple M1 chip',
+                '8GB RAM',
+                '128GB storage',
+                'Touch ID',
+                'Weight: 461 g',
+            ],
+            colors: ['Space Gray', 'Starlight', 'Pink', 'Purple', 'Blue']
+        },
+        {
+            id: 'iphone-1',
+            name: 'iPhone 15 Pro Max',
+            price: 1199,
+            image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=iPhone+15+Pro+Max',
+            description: 'Titanium. Strong. Light. Pro.',
+            specs: [
+                '6.7-inch Super Retina XDR display',
+                'A17 Pro chip',
+                '48MP Main camera',
+                '5x Telephoto',
+                'USB-C',
+                'Up to 29 hours video playback',
+                'Weight: 221 g',
+            ],
+            colors: ['Black Titanium', 'White Titanium', 'Blue Titanium', 'Natural Titanium']
+        },
+        {
+            id: 'iphone-2',
+            name: 'iPhone 15',
+            price: 899,
+            image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=iPhone+15',
+            description: 'Dynamic Island. 48MP Main camera.',
+            specs: [
+                '6.1-inch Super Retina XDR display',
+                'A16 Bionic chip',
+                '48MP Main camera',
+                'USB-C',
+                'Up to 20 hours video playback',
+                'Weight: 171 g',
+            ],
+            colors: ['Black', 'Blue', 'Green', 'Yellow', 'Pink']
+        },
+        { id: 'mac-3', name: 'MacBook Air M1', price: 999, image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=MacBook+Air+M1', description: 'The M1 chip changes everything.', category: 'mac', colors: ['Gold', 'Silver', 'Space Gray'] },
+        { id: 'mac-4', name: 'iMac 24"', price: 1299, image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=iMac+24', description: 'Colorful. Powerful. Personal.', category: 'mac', colors: ['Blue', 'Green', 'Pink', 'Silver', 'Yellow', 'Orange', 'Purple'] },
+        { id: 'ipad-3', name: 'iPad Air (5th Gen)', price: 599, image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=iPad+Air+M1', description: 'Supercharged by the Apple M1 chip.', category: 'ipad', colors: ['Space Gray', 'Starlight', 'Pink', 'Purple', 'Blue'] },
+        { id: 'iphone-3', name: 'iPhone 13', price: 799, image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=iPhone+13', description: 'Powerful. Durable. Essential.', category: 'iphone', colors: ['Starlight', 'Midnight', 'Blue', 'Pink', 'Red', 'Green'] },
+        { id: 'watch-1', name: 'Apple Watch Ultra 2', price: 799, image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=Watch+Ultra+2', description: 'Next-level adventure.', category: 'watch', colors: ['Natural Titanium'] },
+        { id: 'watch-2', name: 'Apple Watch SE', price: 249, image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=Watch+SE', description: 'A great deal to love.', category: 'watch', colors: ['Midnight', 'Starlight', 'Silver'] },
+        { id: 'watch-3', name: 'Apple Watch Series 9', price: 399, image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=Watch+Series+9', description: 'A more powerful way to stay connected.', category: 'watch', colors: ['Midnight', 'Starlight', 'Silver', 'Pink', 'Red'] },
+        { id: 'other-1', name: 'AirPods Pro (2nd Gen)', price: 249, image: 'https://placehold.co/600x400/f5f5f7/1d1d1f?text=AirPods+Pro', description: 'Rebuilt from the sound up.', category: 'other', colors: ['White'] },
+    ];
+
+    // Preia id-ul din URL
+    function getProductId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('id');
+    }
+    const productId = getProductId();
+    const product = products.find(p => p.id === productId);
+    if (!product) {
+        document.querySelector('.container').innerHTML = '<h2>Product not found</h2><a href="store.html" class="back-link">&larr; Back to Store</a>';
+    } else {
+        document.getElementById('product-img').src = product.image;
+        document.getElementById('product-img').alt = product.name;
+        document.getElementById('product-title').textContent = product.name;
+        document.getElementById('product-price').textContent = `$${product.price.toFixed(2)}`;
+        document.getElementById('product-desc').textContent = product.description;
+        const specsList = document.getElementById('specs-list');
+        product.specs.forEach(spec => {
+            const li = document.createElement('li');
+            li.textContent = spec;
+            specsList.appendChild(li);
+        });
+
+        // Display colors
+        const colorOptionsContainer = document.getElementById('color-options');
+        const colorMap = { // Mapping Apple color names to CSS values
+             'Silver': '#c0c0c0',
+             'Space Gray': '#505050',
+             'Midnight': '#202020',
+             'Starlight': '#f0e8d5',
+             'Gold': '#d4af37',
+             'Pink': '#ffc0cb',
+             'Purple': '#a020f0',
+             'Blue': '#0000ff',
+             'Green': '#008000',
+             'Yellow': '#ffff00',
+             'Orange': '#ffa500',
+             'Red': '#ff0000',
+             'Black Titanium': '#454545',
+             'White Titanium': '#f8f8ff',
+             'Blue Titanium': '#6b7a8a',
+             'Natural Titanium': '#c5c5c5',
+             'White': '#ffffff' // Ensure white is explicitly mapped
+             // Add more colors as needed
+        };
+
+        if (product.colors && product.colors.length > 0) {
+             product.colors.forEach(colorName => {
+                 const colorEl = document.createElement('div');
+                 colorEl.className = 'color-option';
+                 
+                 // Use the color map or fallback to lowercase name
+                 const cssColor = colorMap[colorName] || colorName.toLowerCase().replace(/ /g, '');
+                 colorEl.style.backgroundColor = cssColor;
+                 
+                 colorEl.title = colorName; // Tooltip with color name
+                  // Add click event for color selection
+                 colorEl.addEventListener('click', () => {
+                     // Remove selected class from all color options
+                     document.querySelectorAll('.color-option').forEach(option => {
+                         option.classList.remove('selected');
+                     });
+                     // Add selected class to the clicked option
+                     colorEl.classList.add('selected');
+
+                     // Display the name of the selected color
+                     const selectedColorTextElement = document.getElementById('selected-color-text');
+                     if(selectedColorTextElement) {
+                         selectedColorTextElement.textContent = `Selected: ${colorName}`; // Update text with selected color name
+                     }
+                 });
+
+                 colorOptionsContainer.appendChild(colorEl);
+             });
+             
+             // Select the first color by default if colors are available
+             const firstColorOption = colorOptionsContainer.querySelector('.color-option');
+             if(firstColorOption) {
+                  firstColorOption.classList.add('selected');
+                  // Display the name of the initially selected color
+                  const selectedColorTextElement = document.getElementById('selected-color-text');
+                  if(selectedColorTextElement) {
+                       selectedColorTextElement.textContent = `Selected: ${firstColorOption.title}`; // Initial text
+                  }
+             }
+
+        } else {
+             const colorsSection = document.querySelector('.colors-section');
+             if(colorsSection) colorsSection.style.display = 'none'; // Hide section if no colors
+        }
+
+        document.getElementById('add-to-cart-btn').onclick = function() {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const existing = cart.find(item => item.id === product.id);
+
+            // Get selected color
+            const selectedColorElement = document.querySelector('.color-option.selected');
+            const selectedColor = selectedColorElement ? selectedColorElement.title : (product.colors && product.colors.length > 0 ? product.colors[0] : 'Default'); // Get color name from title or default
+
+            // Check if item with the SAME color already exists
+            const existingWithColor = cart.find(item => item.id === product.id && item.color === selectedColor);
+
+            if (existingWithColor) {
+                existingWithColor.quantity += 1;
+            } else {
+                // Add new item with color
+                cart.push({ ...product, quantity: 1, color: selectedColor });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            // window.location.href = 'store.html'; // Remove redirect
+
+            // Add animation (copied from store.html)
+            const button = document.getElementById('add-to-cart-btn');
+            const originalText = button.textContent;
+
+            button.textContent = 'Added!';
+            button.classList.add('animated', 'success'); /* Add success class for styling */
+            button.disabled = true; // Disable button temporarily
+
+            // Remove animation classes and revert text after a delay
+            setTimeout(() => {
+                button.classList.remove('animated', 'success');
+                button.textContent = originalText;
+                button.disabled = false; // Re-enable button
+                
+                // Optional: redirect after animation completes
+                 window.location.href = 'store.html'; 
+
+            }, 2000); // Animation duration + slight delay
+
+        };
+    }
+    </script>
+</body>
+</html> 

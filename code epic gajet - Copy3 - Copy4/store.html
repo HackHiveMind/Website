@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store - All Products</title>
+   <link rel="stylesheet" href="src/styles/storeStyle.css">
+</head>
+<body>
+    <nav class="nav-links" style="justify-content:center;">
+        <a href="#" onclick="showCategory('all', this); return false;" class="active">Store</a>
+        <a href="#" onclick="showCategory('mac', this); return false;">Mac</a>
+        <a href="#" onclick="showCategory('ipad', this); return false;">iPad</a>
+        <a href="#" onclick="showCategory('iphone', this); return false;">iPhone</a>
+        <a href="#" onclick="showCategory('watch', this); return false;">Watch</a>
+        <a href="#" onclick="showCategory('support', this); return false;">Support</a>
+        <a href="checkout.html" class="cart-link">
+            <span style="display:inline-flex;align-items:center;gap:6px;">
+                <svg viewBox="0 0 24 24" aria-hidden="true" style="width:22px;height:22px;vertical-align:middle;"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                <span class="cart-count">0</span>
+            </span>
+        </a>
+    </nav>
+    <!-- HERO/BANNER SECTION from index.html -->
+    <section class="hero">
+        <h1>The new standard.</h1>
+        <p>Powerful. Beautiful. Revolutionary.</p>
+        <div class="cta-buttons">
+            <a href="#" class="btn btn-primary">Learn more</a>
+            <a href="#" class="btn btn-secondary">Buy</a>
+        </div>
+    </section>
+    <!-- END HERO -->
+    <div class="container">
+        <h1 class="products-title">All Products</h1>
+        <div class="sort-bar">
+            <label for="sort-products">Sort by:</label>
+            <select id="sort-products">
+                <option value="default">Default</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+                <option value="name">Name: A-Z</option>
+            </select>
+        </div>
+        <div id="products-container"></div>
+    </div>
+    <script src="src/scripts/storeScript.js"></script>
+</body>
+</html> 

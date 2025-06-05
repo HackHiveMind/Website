@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - Your Brand</title>
+    <link rel="stylesheet" href="src/styles/main.css">
+    <link rel="stylesheet" href="src/styles/animations.css">
+    <link rel="stylesheet" href="src/styles/checkout.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="confirmation-page">
+    <nav class="nav-wrapper" id="main-nav">
+        <div class="nav-content">
+            <a href="index.html" class="logo">YourBrand</a>
+        </div>
+    </nav>
+
+    <main class="confirmation-container">
+        <div class="confirmation-content">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+            </div>
+            <h1>Thank you for your order!</h1>
+            <p class="order-number">Order #<span id="orderNumber">12345</span></p>
+            <p class="confirmation-message">
+                We'll send a confirmation email to <span id="customerEmail">your@email.com</span> with your order details.
+            </p>
+
+            <div class="order-details">
+                <h2>Order Details</h2>
+                <div class="order-items" id="orderItems">
+                    <!-- Order items will be dynamically inserted here -->
+                </div>
+
+                <div class="delivery-info">
+                    <h3>Estimated Delivery</h3>
+                    <p id="deliveryDate">March 15 - March 18</p>
+                    <p class="delivery-address" id="deliveryAddress">
+                        123 Main Street<br>
+                        Apt 4B<br>
+                        New York, NY 10001<br>
+                        United States
+                    </p>
+                </div>
+
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span id="shipping">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax</span>
+                        <span id="tax">$0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span id="total">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="confirmation-actions">
+                <a href="index.html" class="btn btn-primary">Continue Shopping</a>
+                <button class="btn btn-secondary" id="trackOrder">Track Order</button>
+            </div>
+
+            <div class="help-section">
+                <h3>Need Help?</h3>
+                <div class="help-options">
+                    <a href="#" class="help-option">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+                        </svg>
+                        Order Support
+                    </a>
+                    <a href="#" class="help-option">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                        Email Us
+                    </a>
+                    <a href="#" class="help-option">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                        </svg>
+                        Call Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Simulated order data
+        const orderData = {
+            orderNumber: Math.floor(Math.random() * 1000000),
+            customerEmail: 'customer@example.com',
+            deliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric'
+            }) + ' - ' + new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric'
+            }),
+            items: JSON.parse(localStorage.getItem('cart')) || []
+        };
+
+        // Update order information
+        document.getElementById('orderNumber').textContent = orderData.orderNumber;
+        document.getElementById('customerEmail').textContent = orderData.customerEmail;
+        document.getElementById('deliveryDate').textContent = orderData.deliveryDate;
+
+        // Render order items
+        const orderItems = document.getElementById('orderItems');
+        if (orderItems && orderData.items.length > 0) {
+            orderItems.innerHTML = orderData.items.map(item => `
+                <div class="order-item fade-in">
+                    <img src="${item.image}" alt="${item.name}" class="order-item-image">
+                    <div class="order-item-details">
+                        <h4>${item.name}</h4>
+                        <p>Quantity: ${item.quantity}</p>
+                        <p>$${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add animation classes
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.confirmation-content').classList.add('fade-in');
+            
+            // Animate success icon
+            const successIcon = document.querySelector('.success-icon');
+            successIcon.classList.add('scale-in');
+            
+            // Track order button
+            document.getElementById('trackOrder').addEventListener('click', () => {
+                // Implement tracking functionality
+                alert('Order tracking will be available soon!');
+            });
+        });
+    </script>
+</body>
+</html> 
