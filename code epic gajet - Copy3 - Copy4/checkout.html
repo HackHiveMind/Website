@@ -545,7 +545,7 @@
 
                 // Calculate total
                 const calculateTotal = () => {
-                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
                     const shipping = 10;
                     return (subtotal + shipping).toFixed(2);
                 };
@@ -634,12 +634,12 @@
             // Render cart items
             cartItemsContainer.innerHTML = cart.map(item => `
                 <div class="cart-item" data-id="${item.id}">
-                    <img src="${item.image}" alt="${item.name}">
+                    <img src="${item.image || 'https://placehold.co/100x100/f0f0f0/cccccc?text=No+Image'}" alt="${item.name}">
                     <div class="cart-item-info">
                         <h3>${item.name}</h3>
                         ${item.color ? `<p>Color: ${item.color}</p>` : ''}
                         <p>${item.description || ''}</p>
-                        <p class="cart-item-price">$${item.price.toFixed(2)}</p>
+                        <p class="cart-item-price">$${parseFloat(item.price).toFixed(2)}</p>
                     </div>
                     <div class="cart-item-quantity">
                         <button class="quantity-btn" onclick="updateQuantity('${item.id}', -1)">-</button>
@@ -650,7 +650,7 @@
             `).join('');
             
             // Calculate and display order summary
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
             const shipping = 10;
             const total = subtotal + shipping;
             
@@ -679,6 +679,12 @@
                 
                 try {
                     const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+                    const name = document.getElementById('name').value;
+                    const email = document.getElementById('email').value;
+                    const address = document.getElementById('address').value;
+                    const city = document.getElementById('city').value;
+                    const postalCode = document.getElementById('zip').value;
+                    const country = "România"; // Presupunem că țara este România sau o poți extrage dintr-un input
                     
                     if (paymentMethod === 'card') {
                         const cardNumber = document.getElementById('card-number').value;
@@ -687,27 +693,77 @@
                         
                         if (!cardNumber || !expiry || !cvv) {
                             alert('Please fill in all card details');
+                            submitButton.classList.remove('loading');
+                            submitButton.disabled = false;
                             return;
                         }
                         
-                        // Simulate API call
-                        await new Promise(resolve => setTimeout(resolve, 1500));
+                        // Colectăm datele pentru cererea POST
+                        const orderData = {
+                            items: cart.map(item => ({
+                                productId: item.id.toString(), // Asigură-te că ID-ul produsului este un string
+                                name: item.name,
+                                price: parseFloat(item.price),
+                                quantity: item.quantity
+                            })),
+                            shipping: {
+                                cost: parseFloat(shipping.toFixed(2)), // Folosim costul de transport calculat anterior
+                                address: {
+                                    street: address,
+                                    city: city,
+                                    postalCode: postalCode,
+                                    country: country
+                                },
+                                deliveryMethod: "Standard"
+                            },
+                            payment: {
+                                method: "Card" // Metoda de plată este "Card"
+                            }
+                        };
+
+                        console.log('Sending order data:', orderData);
+
+                        // Trimitem cererea POST către backend
+                        const response = await fetch('http://localhost:3001/api/checkout', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(orderData)
+                        });
+
+                        const responseData = await response.json();
+                        console.log('Backend response:', responseData);
+
+                        if (response.ok) {
+                            // Comanda a fost plasată cu succes
+                            const successModal = document.getElementById('success-modal');
+                            successModal.classList.add('active');
+                            
+                            // Curățăm coșul după plasarea comenzii
+                            localStorage.removeItem('cart');
+                            
+                            // Redirecționăm după 3 secunde
+                            setTimeout(() => {
+                                window.location.href = 'store.html';
+                            }, 3000);
+
+                        } else {
+                            // Eroare la plasarea comenzii
+                            alert(`Eroare la plasarea comenzii: ${responseData.message || 'A apărut o eroare necunoscută.'}`);
+                        }
                         
-                        // Show success modal
-                        const successModal = document.getElementById('success-modal');
-                        successModal.classList.add('active');
-                        
-                        // Clear cart
-                        localStorage.removeItem('cart');
-                        
-                        // Redirect after 3 seconds
-                        setTimeout(() => {
-                            window.location.href = 'store.html';
-                        }, 3000);
+                    } else if (paymentMethod === 'apple') {
+                        // Logica pentru Apple Pay, dacă este implementată
+                        // Pentru moment, vom afișa un alert dacă Apple Pay nu este complet configurat
+                        alert('Apple Pay nu este complet configurat pentru plasarea comenzii.');
+                        submitButton.classList.remove('loading');
+                        submitButton.disabled = false;
+                        return;
                     }
                 } catch (error) {
-                    console.error('Error processing order:', error);
-                    alert('There was an error processing your order. Please try again.');
+                    console.error('Eroare la procesarea comenzii:', error);
+                    alert('A apărut o eroare la procesarea comenzii. Te rugăm să încerci din nou.');
                 } finally {
                     submitButton.classList.remove('loading');
                     submitButton.disabled = false;
@@ -716,18 +772,27 @@
         });
         
         function updateQuantity(itemId, change) {
+            console.log('updateQuantity called:', { itemId, change });
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
-            const itemIndex = cart.findIndex(item => item.id === itemId);
+            console.log('Cart before update:', cart);
+            const parsedItemId = parseInt(itemId, 10);
+            const itemIndex = cart.findIndex(item => item.id === parsedItemId);
+            console.log('itemIndex:', itemIndex);
             
             if (itemIndex > -1) {
                 cart[itemIndex].quantity += change;
+                console.log('Quantity updated for item:', cart[itemIndex]);
                 
                 if (cart[itemIndex].quantity <= 0) {
                     cart.splice(itemIndex, 1);
+                    console.log('Item removed from cart.');
                 }
                 
                 localStorage.setItem('cart', JSON.stringify(cart));
+                console.log('Cart after update (in localStorage):', JSON.parse(localStorage.getItem('cart')));
                 location.reload();
+            } else {
+                console.log('Item not found in cart for ID:', itemId);
             }
         }
         
