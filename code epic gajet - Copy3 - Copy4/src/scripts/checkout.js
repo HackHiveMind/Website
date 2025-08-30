@@ -8,6 +8,7 @@ class CheckoutManager {
         this.currentStep = 'cart';
         this.paymentMethod = 'apple-pay';
         this.formData = {};
+        this.orderHistory = [];
         this.init();
     }
 
@@ -16,8 +17,8 @@ class CheckoutManager {
             const storedCart = localStorage.getItem('cart');
             return storedCart ? JSON.parse(storedCart) : [];
         } catch (error) {
-            console.error('Error loading cart from storage:', error);
-            this.showErrorMessage('Failed to load cart. Please refresh the page.');
+            console.error('Eroare la încărcarea coșului:', error);
+            this.showErrorMessage('Nu s-a putut încărca coșul. Vă rugăm să reîncărcați pagina.');
             return [];
         }
     }
@@ -25,9 +26,13 @@ class CheckoutManager {
     init() {
         // Verificare DOM ready state
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.setupCheckout());
+            document.addEventListener('DOMContentLoaded', () => {
+                this.setupCheckout();
+                this.fetchOrderHistory(); // Fetch order history on init
+            });
         } else {
             this.setupCheckout();
+            this.fetchOrderHistory(); // Fetch order history on init
         }
     }
 
@@ -58,8 +63,8 @@ class CheckoutManager {
         if (this.cart.length === 0) {
             cartContainer.innerHTML = `
                 <div class="empty-cart">
-                    <p>Your cart is empty</p>
-                    <a href="index.html" class="btn btn-primary">Continue Shopping</a>
+                    <p>Coșul dumneavoastră este gol</p>
+                    <a href="index.html" class="btn btn-primary">Continuă cumpărăturile</a>
                 </div>
             `;
             return;
@@ -68,19 +73,19 @@ class CheckoutManager {
         try {
             cartContainer.innerHTML = this.cart.map(item => `
                 <div class="cart-item fade-in" data-item-id="${item.id || ''}">
-                    <img src="${item.image || '#'}" alt="${item.name || 'Product image'}" class="cart-item-image" loading="lazy">
+                    <img src="${item.image || '#'}" alt="${item.name || 'Imagine produs'}" class="cart-item-image" loading="lazy">
                     <div class="cart-item-details">
-                        <h4 class="cart-item-name">${item.name || 'Unnamed product'}</h4>
-                        <p class="cart-item-price">$${(item.price || 0).toFixed(2)}</p>
-                        <p class="cart-item-quantity">Quantity: ${item.quantity || 1}</p>
+                        <h4 class="cart-item-name">${item.name || 'Produs fără nume'}</h4>
+                        <p class="cart-item-price">${(item.price || 0).toFixed(2)} RON</p>
+                        <p class="cart-item-quantity">Cantitate: ${item.quantity || 1}</p>
                     </div>
                 </div>
             `).join('');
         } catch (error) {
-            console.error('Error rendering cart items:', error);
+            console.error('Eroare la afișarea produselor din coș:', error);
             cartContainer.innerHTML = `
                 <div class="error-message">
-                    <p>Failed to load cart items. Please try again.</p>
+                    <p>Nu s-au putut încărca produsele din coș. Vă rugăm să încercați din nou.</p>
                 </div>
             `;
         }
@@ -184,20 +189,27 @@ class CheckoutManager {
     }
 
     validateStep(step) {
+        console.log(`Se validează pasul: ${step}`);
         const stepElement = document.querySelector(`[data-step="${step}"]`);
-        if (!stepElement) return true;
+        if (!stepElement) {
+            console.log(`Elementul pentru pasul "${step}" nu a fost găsit.`);
+            return true;
+        }
         
         let isValid = true;
         const inputs = stepElement.querySelectorAll('input:not([disabled]), select:not([disabled])');
         
         inputs.forEach(input => {
-            if (!this.validateInput(input)) {
+            const inputIsValid = this.validateInput(input);
+            console.log(`Câmpul ${input.id} este valid: ${inputIsValid}`);
+            if (!inputIsValid) {
                 isValid = false;
                 input.classList.add('shake');
                 setTimeout(() => input.classList.remove('shake'), 600);
             }
         });
         
+        console.log(`Rezultatul final al validării pentru pasul ${step}: ${isValid}`);
         return isValid;
     }
 
@@ -264,6 +276,20 @@ class CheckoutManager {
                 }
             });
         });
+
+        document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // ... validări ...
+            const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+
+            if (paymentMethod === 'card') {
+                // ... logica pentru card ...
+            } else if (paymentMethod === 'apple') {
+                simulateApplePay();
+                return;
+            }
+            // ... restul codului ...
+        });
     }
 
     showStep(step) {
@@ -307,20 +333,25 @@ class CheckoutManager {
     }
 
     async handlePlaceOrder() {
-        if (!this.validateStep('payment')) return;
-        
+        console.log('handlePlaceOrder a fost apelată.');
+        if (!this.validateStep('payment')) {
+            console.log('Validarea pasului "Plată" a eșuat. Nu se trimite comanda.');
+            return;
+        }
+        console.log('Validarea pasului "Plată" a trecut. Se procesează comanda.');
+
         const placeOrderButton = document.getElementById('place-order');
         if (!placeOrderButton) return;
         
         placeOrderButton.disabled = true;
         placeOrderButton.innerHTML = `
             <span class="loading-spinner"></span>
-            Processing...
+            Se procesează...
         `;
         
         try {
             if (this.cart.length === 0) {
-                throw new Error('Your cart is empty');
+                throw new Error('Coșul dumneavoastră este gol');
             }
             
             await this.processPayment();
@@ -339,22 +370,21 @@ class CheckoutManager {
             
             this.showSuccessMessage();
             
-            // Curățare stocare locală
             try {
                 localStorage.removeItem('cart');
                 localStorage.setItem('lastOrder', JSON.stringify(orderData));
             } catch (storageError) {
-                console.error('Error updating storage:', storageError);
+                console.error('Eroare la actualizarea stocării:', storageError);
             }
             
             setTimeout(() => {
-                window.location.href = 'order-confirmation.html';
+                window.location.href = 'confirmare-comanda.html';
             }, 2000);
         } catch (error) {
-            console.error('Order placement error:', error);
+            console.error('Eroare la plasarea comenzii:', error);
             this.showErrorMessage(error.message);
             placeOrderButton.disabled = false;
-            placeOrderButton.textContent = 'Place Order';
+            placeOrderButton.textContent = 'Plasează comanda';
         }
     }
 
@@ -369,14 +399,30 @@ class CheckoutManager {
     }
 
     async createOrder(orderData) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    orderId: Math.floor(Math.random() * 1000000),
-                    ...orderData
-                });
-            }, 500);
-        });
+        try {
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Nu s-a putut crea comanda');
+            }
+
+            const result = await response.json();
+            
+            // Actualizăm istoricul după crearea unei comenzi noi
+            await this.fetchOrderHistory();
+            
+            return result;
+        } catch (error) {
+            console.error('Eroare la crearea comenzii:', error);
+            throw error;
+        }
     }
 
     showSuccessMessage() {
@@ -387,13 +433,11 @@ class CheckoutManager {
             <svg aria-hidden="true" viewBox="0 0 24 24">
                 <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7 19.6 5.6 9 16.2z"/>
             </svg>
-            <p>Order placed successfully!</p>
+            <p>Comanda a fost plasată cu succes!</p>
         `;
         
-        // Adăugare mesaj în DOM
         document.body.appendChild(message);
         
-        // Curățare după 5 secunde
         setTimeout(() => {
             if (message && message.parentNode) {
                 message.parentNode.removeChild(message);
@@ -412,10 +456,8 @@ class CheckoutManager {
             <p>${error}</p>
         `;
         
-        // Adăugare mesaj în DOM
         document.body.appendChild(message);
         
-        // Curățare după 5 secunde
         setTimeout(() => {
             if (message && message.parentNode) {
                 message.parentNode.removeChild(message);
@@ -490,6 +532,85 @@ class CheckoutManager {
             session.begin();
         });
     }
+
+    async fetchOrderHistory() {
+        try {
+            const response = await fetch('/api/orders/history', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Nu s-a putut încărca istoricul comenzilor');
+            }
+
+            const data = await response.json();
+            this.orderHistory = data.orders;
+            this.displayOrderHistory();
+        } catch (error) {
+            console.error('Eroare la încărcarea istoricului:', error);
+            this.showErrorMessage('Nu s-a putut încărca istoricul comenzilor. Vă rugăm să încercați din nou.');
+        }
+    }
+
+    displayOrderHistory() {
+        const historyContainer = document.getElementById('order-history');
+        if (!historyContainer) return;
+
+        if (this.orderHistory.length === 0) {
+            historyContainer.innerHTML = `
+                <div class="empty-history">
+                    <p>Nu există comenzi în baza de date</p>
+                </div>
+            `;
+            return;
+        }
+
+        historyContainer.innerHTML = this.orderHistory.map(order => `
+            <div class="order-item fade-in">
+                <div class="order-header">
+                    <h4>Comanda #${order.orderId}</h4>
+                    <span class="order-date">${new Date(order.date).toLocaleDateString('ro-RO')}</span>
+                </div>
+                <div class="order-details">
+                    <div class="order-items">
+                        ${order.items.map(item => `
+                            <div class="order-product">
+                                <img src="${item.image}" alt="${item.name}" class="order-product-image">
+                                <div class="order-product-info">
+                                    <p class="product-name">${item.name}</p>
+                                    <p class="product-quantity">Cantitate: ${item.quantity}</p>
+                                    <p class="product-price">${(item.price * item.quantity).toFixed(2)} RON</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="order-summary">
+                        <p>Subtotal: ${order.payment.total.toFixed(2)} RON</p>
+                        <p>Transport: ${order.shipping.cost || 0} RON</p>
+                        <p class="total">Total: ${(order.payment.total + (order.shipping.cost || 0)).toFixed(2)} RON</p>
+                    </div>
+                    <div class="order-status">
+                        <p>Status: <span class="status-${order.status.toLowerCase()}">${this.getStatusInRomanian(order.status)}</span></p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    getStatusInRomanian(status) {
+        const statusMap = {
+            'PENDING': 'În așteptare',
+            'PROCESSING': 'În procesare',
+            'SHIPPED': 'Expediată',
+            'DELIVERED': 'Livrată',
+            'CANCELLED': 'Anulată'
+        };
+        return statusMap[status] || status;
+    }
 }
 
 // Inițializare sigură
@@ -505,4 +626,78 @@ try {
             </div>
         `;
     }
+}
+
+// Simulare Apple Pay pentru test
+function simulateApplePay() {
+    // Colectează datele din formular
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    const name = document.getElementById('name')?.value || '';
+    const email = document.getElementById('email')?.value || '';
+    const phone = document.getElementById('phone')?.value || '';
+    const address = document.getElementById('address')?.value || '';
+    const city = document.getElementById('city')?.value || '';
+    const postalCode = document.getElementById('zip')?.value || '';
+    const country = 'România';
+    // Poți adăuga și shipping method dacă ai
+    const shippingMethod = document.querySelector('input[name="shipping"]:checked')?.value || 'standard';
+    const shippingCost = shippingMethod === 'express' ? 25 : 10;
+
+    const orderData = {
+        items: cart.map(item => ({
+            productId: item.id?.toString() || '',
+            name: item.name,
+            price: parseFloat(item.price),
+            quantity: item.quantity
+        })),
+        shipping: {
+            cost: shippingCost,
+            method: shippingMethod,
+            address: {
+                street: address,
+                city: city,
+                postalCode: postalCode,
+                country: country
+            }
+        },
+        customer: {
+            name: name,
+            email: email,
+            phone: phone
+        },
+        payment: {
+            method: "Apple Pay"
+        }
+    };
+
+    // Trimite comanda către backend
+    fetch('http://localhost:3001/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+    })
+    .then(res => res.json())
+    .then(() => {
+        // Afișează modalul de succes
+        const successModal = document.getElementById('success-modal');
+        if (successModal) successModal.classList.add('active');
+        // Golește coșul
+        localStorage.removeItem('cart');
+        // Redirecționează după 3 secunde
+        setTimeout(() => {
+            window.location.href = 'store.html';
+        }, 3000);
+    })
+    .catch(() => {
+        alert('A apărut o eroare la simularea plății Apple Pay.');
+    });
+}
+
+// Înlocuiește logica Apple Pay cu simulare
+const applePayButton = document.getElementById('apple-pay-button');
+if (applePayButton) {
+    applePayButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        simulateApplePay();
+    });
 }
