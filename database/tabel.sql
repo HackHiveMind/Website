@@ -29,13 +29,15 @@ CREATE TABLE IF NOT EXISTS addresses (
 
 -- Products table
 CREATE TABLE IF NOT EXISTS products (
-
     product_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
     stock_quantity INTEGER NOT NULL DEFAULT 0,
     image_url VARCHAR(255),
+    category VARCHAR(100),
+    colors JSONB,
+    specifications JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -48,7 +50,10 @@ CREATE TABLE IF NOT EXISTS orders (
     total_amount DECIMAL(10,2) NOT NULL,
     status VARCHAR(20) CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')) DEFAULT 'pending',
     shipping_address_id INTEGER REFERENCES addresses(address_id),
-    tracking_number VARCHAR(100)
+    tracking_number VARCHAR(100),
+    payment_method VARCHAR(50),
+    shipping_details JSONB,
+    items JSONB
 );
 
 -- Order items table

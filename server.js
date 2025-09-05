@@ -1,115 +1,80 @@
-// server.js
 const express = require('express');
 const cors = require('cors');
-const pool = require('./db'); // fișierul db.js cu conexiunea la PostgreSQL
+const { createClient } = require('@supabase/supabase-js');
 
+// 🔧 Corectare: am șters spațiile de la final în URL
+const supabaseUrl = 'https://jhspgxonaankhjjqkqgw.supabase.co'; // ✅ fără spații
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoc3BneG9uYWFua2hqanFrcWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY3MzI0MjQsImV4cCI6MjA3MjMwODQyNH0.doxG6-PqF8uicyVyR6fuFFV410w8AzQ9iukfxHoyN64';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 const app = express();
 
-app.use(cors()); // PERMITE CERERI DIN FRONT-END
-app.use(express.json()); // PENTRU A CITI BODY-UL JSON
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public')); // Servește fișierele din 'public'
 
-// Endpoint: returnează toate produsele
+// Redirectare principală
+app.get('/', (req, res) => {
+  res.redirect('/store.html');
+});
+
+// === API ENDPOINTS ===
+
+// GET: Toate produsele
 app.get('/api/products', async (req, res) => {
-    try {
-      const result = await pool.query('SELECT * FROM products');
-      return res.json(result.rows);
-    } catch (err) {
-      console.error('Eroare la interogarea bazei de date:', err);
-      return res.status(500).json({ error: 'Eroare la preluarea datelor' });
-    }
-  });
-  
+  try {
+    const { data, error } = await supabase.from('products').select('*');
+    if (error) throw error;
+    return res.json(data);
+  } catch (err) {
+    console.error('Eroare la preluarea produselor:', err);
+    return res.status(500).json({ error: 'Eroare la preluarea datelor' });
+  }
+});
 
-// Endpoint pentru utilizatori
-app.get('/api/users', async (req, res) => {
-    try {
-      const result = await pool.query('SELECT * FROM users');
-      return res.json(result.rows);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Eroare la preluarea utilizatorilor' });
-    }
-  });
- 
-// Endpoint: returnează toate adresele
-app.get('/api/addresses', async (req, res) => {
-    try {
-      const result = await pool.query('SELECT * FROM addresses');
-      return res.json(result.rows);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Eroare la preluarea adreselor' });
-    }
-  });
+// GET: Produse după categorie
+app.get('/api/products/category/:category', async (req, res) => {
+  try {
+    const { category } = req.params;
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('category', category);
+    if (error) throw error;
+    return res.json(data);
+  } catch (err) {
+    console.error('Eroare la filtrare:', err);
+    return res.status(500).json({ error: 'Eroare la filtrare' });
+  }
+});
 
-  // Endpoint: returnează toate produsele
-app.get('/api/products', async (req, res) => {
-    try {
-      const result = await pool.query('SELECT * FROM products');
-      return res.json(result.rows);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Eroare la preluarea produselor' });
-    }
-  });
-  
-  // Endpoint: returnează produsele după categorie
-  app.get('/api/products/category/:category', async (req, res) => {
-    try {
-      const { category } = req.params;
-      const result = await pool.query('SELECT * FROM products WHERE category = $1', [category]);
-      return res.json(result.rows);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Eroare la filtrare' });
-    }
-  });
-  app.get('/api/products', async (req, res) => {
-    try {
-      const result = await pool.query('SELECT * FROM products');
-      return res.json(result.rows);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Eroare la preluarea produselor' });
-    }
-  });
-  app.get('/api/products/category/:category', async (req, res) => {
-    try {
-      const { category } = req.params;
-      const result = await pool.query(
-        'SELECT * FROM products WHERE category = $1',
-        [category]
-      );
-      return res.json(result.rows);
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Eroare la filtrare' });
-    }
-  });
-
-// New endpoint: return a single product by ID
+// GET: Un singur produs după ID
 app.get('/api/products/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT product_id, name, description, price, stock_quantity, image_url, colors, category, specifications FROM products WHERE product_id = $1', [id]);
-    if (result.rows.length === 0) {
+    const { data, error } = await supabase
+      .from('products')
+      .select('product_id, name, description, price, stock_quantity, image_url, colors, category, specifications')
+      .eq('product_id', id)
+      .single();
+
+    if (error || !data) {
       return res.status(404).json({ error: 'Product not found' });
     }
 
-    const product = result.rows[0];
+    const product = data;
     const transformedProduct = {
       ...product,
       specs: [],
     };
 
-    // Transformă obiectul JSON din coloana 'specifications' într-un array de stringuri pentru 'specs'
     if (product.specifications) {
       for (const key in product.specifications) {
         transformedProduct.specs.push(`${key}: ${product.specifications[key]}`);
       }
     }
 
-    // Asigură-te că colors este un array, chiar dacă este null în DB
     if (!transformedProduct.colors) {
       transformedProduct.colors = [];
     }
@@ -121,43 +86,58 @@ app.get('/api/products/:id', async (req, res) => {
   }
 });
 
-// Endpoint POST pentru a crea o comandă nouă
+// POST: Creează o comandă nouă
 app.post('/api/orders', async (req, res) => {
   console.log('Received request body:', req.body);
+
   try {
-    // Adaugăm validare pentru req.body și items
     if (!req.body || !req.body.items) {
-      console.error('req.body sau req.body.items lipsesc pentru plasarea comenzii.');
-      return res.status(400).json({ message: 'Datele comenzii lipsesc. Asigură-te că trimiți un corp JSON valid cu "items".' });
+      return res.status(400).json({
+        message: 'Datele comenzii lipsesc. Asigură-te că trimiți un corp JSON valid cu "items".'
+      });
     }
 
-    let { items, shipping, payment, date } = req.body;
+    const { items, shipping, payment, date } = req.body;
+    const shippingObj = shipping || {};
+    const paymentObj = payment || {};
+    const orderDate = date || new Date().toISOString();
 
-    // Asigură-te că shipping, payment și date sunt definite, chiar dacă sunt obiecte/stringuri goale
-    shipping = shipping || {};
-    payment = payment || {};
-    date = date || new Date().toISOString(); // Folosim data curentă dacă lipsește
-
-    // Calculăm totalul comenzii pe baza produselor
     const totalAmount = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    // Adăugăm costul de transport la total
-    const shippingCost = shipping ? (shipping.cost || 0) : 0;
+    const shippingCost = shippingObj.cost || 0;
     const finalTotal = totalAmount + shippingCost;
 
-    const result = await pool.query(
-      'INSERT INTO orders (order_date, total_amount, payment_method, shipping_details, items, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING order_id, order_date, total_amount, payment_method, shipping_details, items, status',
-      [date, finalTotal, payment.method, JSON.stringify(shipping), JSON.stringify(items), 'pending'] // Status implicit 'pending'
-    );
-    const newOrder = result.rows[0];
-    console.log('Comandă salvată în baza de date:', newOrder.order_id);
+    const { data: newOrder, error: orderError } = await supabase
+      .from('orders')
+      .insert([
+        {
+          order_date: orderDate,
+          total_amount: finalTotal,
+          payment_method: paymentObj.method,
+          shipping_details: shippingObj,
+          items: items,
+          status: 'pending'
+        }
+      ])
+      .select()
+      .single();
 
-    // Inserăm produsele comandate în tabela 'order_items'
+    if (orderError) throw orderError;
+
+    console.log('Comandă salvată:', newOrder.order_id);
+
     for (const item of items) {
-      await pool.query(
-        "INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES ($1, $2, $3, $4)",
-        [newOrder.order_id, item.productId, item.quantity, item.price] // Folosim numele corecte ale coloanelor și includem prețul unitar
-      );
+      const { error: itemError } = await supabase
+        .from('order_items')
+        .insert([
+          {
+            order_id: newOrder.order_id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            unit_price: item.price
+          }
+        ]);
+
+      if (itemError) console.error('Eroare la inserare order_item:', itemError);
     }
 
     res.status(201).json({
@@ -170,49 +150,34 @@ app.post('/api/orders', async (req, res) => {
       items: newOrder.items,
       status: newOrder.status
     });
+
   } catch (err) {
     console.error('Eroare la crearea comenzii:', err);
     res.status(500).json({ message: 'Eroare la plasarea comenzii.', error: err.message });
   }
 });
 
-// Endpoint GET pentru a returna istoricul comenzilor
+// GET: Istoricul comenzilor
 app.get('/api/orders/history', async (req, res) => {
   try {
-    const result = await pool.query('SELECT order_id, order_date, total_amount, payment_method, shipping_details, items, status FROM orders ORDER BY order_date DESC');
-    
+    const { data: orders, error } = await supabase
+      .from('orders')
+      .select('order_id, order_date, total_amount, payment_method, shipping_details, items, status')
+      .order('order_date', { ascending: false });
+
+    if (error) throw error;
+
     console.log('\n=== DETALII COMENZI ===');
-    result.rows.forEach(order => {
+    orders.forEach(order => {
       console.log(`\nComanda #${order.order_id}:`);
       console.log(`Data: ${new Date(order.order_date).toLocaleString()}`);
       console.log(`Total: ${order.total_amount} RON`);
       console.log(`Metoda de plată: ${order.payment_method}`);
       console.log(`Status: ${order.status}`);
-      
-      console.log('\nDetalii livrare:');
-      const shipping = order.shipping_details;
-      console.log(`- Cost transport: ${shipping.cost} RON`);
-      console.log(`- Metodă livrare: ${shipping.deliveryMethod}`);
-      if (shipping.address) {
-        console.log('- Adresă:');
-        console.log(`  * Strada: ${shipping.address.street}`);
-        console.log(`  * Oraș: ${shipping.address.city}`);
-        console.log(`  * Cod poștal: ${shipping.address.postalCode}`);
-        console.log(`  * Țară: ${shipping.address.country}`);
-      }
-      
-      console.log('\nProduse comandate:');
-      order.items.forEach(item => {
-        console.log(`- ${item.name}`);
-        console.log(`  * Preț: ${item.price} RON`);
-        console.log(`  * Cantitate: ${item.quantity}`);
-        console.log(`  * ID Produs: ${item.productId}`);
-      });
       console.log('------------------------');
     });
-    
-    // Transformăm datele pentru a se potrivi cu formatul așteptat de frontend
-    const ordersHistory = result.rows.map(order => ({
+
+    const ordersHistory = orders.map(order => ({
       orderId: order.order_id,
       date: order.order_date,
       items: order.items,
@@ -221,26 +186,25 @@ app.get('/api/orders/history', async (req, res) => {
         method: order.payment_method
       },
       shipping: {
-        cost: order.shipping_details.cost,
-        address: order.shipping_details.address,
-        deliveryMethod: order.shipping_details.deliveryMethod
+        cost: order.shipping_details?.cost,
+        address: order.shipping_details?.address,
+        deliveryMethod: order.shipping_details?.deliveryMethod
       },
       status: order.status
     }));
 
     res.status(200).json({ orders: ordersHistory });
+
   } catch (err) {
     console.error('Eroare la preluarea istoricului comenzilor:', err);
     res.status(500).json({ message: 'Eroare la preluarea istoricului comenzilor.', error: err.message });
   }
 });
 
-// New endpoint for checkout calculations
+// POST: Checkout
 app.post('/api/checkout', async (req, res) => {
   try {
-    // Validăm datele primite
     if (!req.body || !req.body.items) {
-      console.error('Date lipsă pentru checkout.');
       return res.status(400).json({ message: 'Coșul de cumpărături lipsește.' });
     }
 
@@ -250,43 +214,42 @@ app.post('/api/checkout', async (req, res) => {
       return res.status(400).json({ message: 'Coșul de cumpărături este gol.' });
     }
 
-    // Calculăm subtotalul
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    // Calculăm TVA (19%)
     const taxRate = 0.19;
     const tax = subtotal * taxRate;
-    
-    // Adăugăm costul de transport
-    const shippingCost = shipping ? (shipping.cost || 0) : 0;
-    
-    // Calculăm totalul final
+    const shippingCost = shipping?.cost || 0;
     const total = subtotal + tax + shippingCost;
 
-    // Salvăm comanda în baza de date
-    const result = await pool.query(
-      'INSERT INTO orders (order_date, total_amount, payment_method, shipping_details, items, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING order_id, order_date, total_amount, payment_method, shipping_details, items, status',
-      [
-        new Date().toISOString(),
-        total,
-        payment.method,
-        JSON.stringify(shipping),
-        JSON.stringify(items),
-        'pending'
-      ]
-    );
+    const { data: newOrder, error: orderError } = await supabase
+      .from('orders')
+      .insert([
+        {
+          order_date: new Date().toISOString(),
+          total_amount: total,
+          payment_method: payment?.method,
+          shipping_details: shipping,
+          items: items,
+          status: 'pending'
+        }
+      ])
+      .select()
+      .single();
 
-    const newOrder = result.rows[0];
+    if (orderError) throw orderError;
 
-    // Salvăm produsele în order_items
     for (const item of items) {
-      await pool.query(
-        "INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES ($1, $2, $3, $4)",
-        [newOrder.order_id, item.productId, item.quantity, item.price]
-      );
+      await supabase
+        .from('order_items')
+        .insert([
+          {
+            order_id: newOrder.order_id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            unit_price: item.price
+          }
+        ]);
     }
 
-    // Returnăm răspunsul cu toate detaliile
     res.status(201).json({
       message: 'Comanda a fost plasată cu succes!',
       order: {
@@ -298,7 +261,7 @@ app.post('/api/checkout', async (req, res) => {
           tax: tax.toFixed(2),
           shipping: shippingCost.toFixed(2),
           total: total.toFixed(2),
-          method: payment.method
+          method: payment?.method
         },
         shipping: {
           ...shipping,
@@ -310,14 +273,36 @@ app.post('/api/checkout', async (req, res) => {
 
   } catch (err) {
     console.error('Eroare la procesarea checkout-ului:', err);
-    res.status(500).json({ 
-      message: 'Eroare la procesarea checkout-ului.', 
-      error: err.message 
-    });
+    res.status(500).json({ message: 'Eroare la procesarea checkout-ului.', error: err.message });
   }
 });
 
-// Pornim serverul
-app.listen(3001, () => {
-  console.log('Serverul rulează pe http://localhost:3001');
+// === PORNIM SERVERUL ===
+
+// ✅ PORT definit o singură dată
+const PORT = process.env.PORT || 3001;
+
+// Funcție pentru a găsi IP-ul local
+function getLocalIP() {
+  const os = require('os');
+  const interfaces = os.networkInterfaces();
+  for (const interfaceName of Object.keys(interfaces)) {
+    const iface = interfaces[interfaceName];
+    for (const alias of iface) {
+      if (alias.family === 'IPv4' && !alias.internal && alias.address.startsWith('192.168')) {
+        return alias.address;
+      }
+    }
+  }
+  return 'localhost';
+}
+
+const localIp = getLocalIP();
+
+// Pornim serverul pe 0.0.0.0 ca să fie accesibil în rețea
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Serverul pornește...`);
+  console.log(`🌐 Accesează de pe alt dispozitiv: http://${localIp}:${PORT}`);
+  console.log(`💡 Ex: http://192.168.1.100:${PORT}`);
+  console.log(`ℹ️  Toate dispozitivele trebuie să fie pe aceeași rețea Wi-Fi.`);
 });
