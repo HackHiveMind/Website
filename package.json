@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
+    "@supabase/supabase-js": "^2.56.1",
     "body-parser": "^2.2.0",
     "corepack": "^0.32.0",
     "cors": "^2.8.5",
