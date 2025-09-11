@@ -13,10 +13,10 @@ app.use('/admin/static', express.static(path.join(__dirname, 'admin/views')));
 
 const con=new Client({
     host: "localhost",
-    user: "postgres",
+    user: "supabase",
     port: 5432,
     password: "soimilor9",
-    database:"databases"
+    database:"databases"  
 })   
 
 con.connect().then(()=> console.log("connected"))
