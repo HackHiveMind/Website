@@ -333,6 +333,6 @@ const localIp = getLocalIP();
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Serverul pornește...`);
   console.log(`🌐 Accesează de pe alt dispozitiv: http://${localIp}:${PORT}`);
-  console.log(`💡 Ex: http://192.168.1.100:${PORT}`);
+  console.log(`Ex: http://${localIp}:${PORT} `);
   console.log(`ℹ️  Toate dispozitivele trebuie să fie pe aceeași rețea Wi-Fi.`);
 });
