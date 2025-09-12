@@ -1,46 +1,70 @@
-# Frontend
+# Website
 
-## Prezentare
-Frontend static (HTML/CSS/JS) servit din `frontend/public` de către `backend/server.js`.
+## Ce am construit
 
-- Resurse publice în `frontend/public`
-- Pagini/demo suplimentare în `frontend/code epic gajet - Copy3 - Copy4/`
+Am creat un site web pentru un magazin online.
 
-## Structură
-```
-frontend/
-  public/                 # Servit la http://localhost:3001/
-    index.html
-    store.html
-    assets/
-  code epic gajet - Copy3 - Copy4/
-    login.html
-    orders.html
-    src/
-      styles/
-      scripts/
-```
+### Cum functioneaza:
 
-## Dezvoltare locală
-Pornește backend-ul; acesta servește directorul public.
-```bash
-cd backend
+**Frontend 
+- Am facut pagini simple cu HTML si CSS
+- Oamenii pot vedea produse
+- Pot sa faca comenzi
+
+
+**Backend 
+- Am folosit Node.js cu Express
+- Toate datele le tin in Supabase 
+- Am facut API-uri pentru a lua si salva informatii
+
+## Ce am folosit 
+
+- **Node.js** - pentru server
+- **Express** - pentru rutele web
+- **Supabase** - pentru baza de date
+- **HTML/CSS/JavaScript** - pentru interfata
+
+## Cum sa pornesti proiectul
+
+### 1. Cloneaza codul 
+\`\`\`bash
+git clone https://github.com/HackHiveMind/Website.git
+cd Website
+\`\`\`
+
+### 2. Instaleaza pachetele json
+\`\`\`bash
+npm install
+\`\`\`
+
+### 3. Configureaza baza de date
+- Mergi pe supabase.com si faci cont
+- Creezi un proiect nou
+- Copiezi URL-ul si cheia API
+
+
+
+### 4. Pornesti serverul
+\`\`\`node.js
 node server.js
-```
-Accesează:
-- Site principal: `http://localhost:3001/`
-- Exemplar magazin: `http://localhost:3001/store.html`
+\`\`\`
 
-Dacă deschizi paginile demo direct de pe disc, apelurile API către `http://localhost:3001` trebuie să fie accesibile.
+Mergi la http://localhost:3001 si ar trebui sa vezi site-ul!
 
-## Utilizare API
-Frontend-ul consumă API-ul backend:
-- GET `/api/products`
-- GET `/api/products/:id`
-- POST `/api/orders`
-- GET `/api/orders/history`
-- POST `/api/checkout`
+## Structura proiectului
 
-Asigură-te că CORS este activ pe backend (este activ implicit în `server.js`).
+\`\`\`
+Website/
+├── server.js          # Serverul principal
+├── app.js            # Configurari Express
+├── routes/           # Rutele pentru pagini
+├── public/           # Fisiere CSS, JS, imagini
+├── admin/            # Panoul de admin
+└── package.json      # Dependentele
+\`\`\`
 
+## Cum functioneaza fiecare parte
 
+**server.js** - Aici pornesc serverul si conectez totul
+**routes/** - Aici am pus toate paginile (home, produse, comenzi)
+**public/** - Fisierele statice (CSS, imagini, JavaScript)
