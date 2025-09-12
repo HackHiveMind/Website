@@ -1,0 +1,80 @@
+body {
+    background: #f4f6f8;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.admin-container {
+    max-width: 500px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 32px 24px 24px 24px;
+}
+h2, h3 {
+    text-align: center;
+    color: #222;
+}
+form#admin-login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+form#admin-login-form input {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+form#admin-login-form button {
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+form#admin-login-form button:hover {
+    background: #125ea7;
+}
+.error-message {
+    color: #d32f2f;
+    text-align: center;
+    font-size: 0.95rem;
+}
+#admin-orders-section {
+    margin-top: 24px;
+}
+#orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+}
+#orders-table th, #orders-table td {
+    border: 1px solid #e0e0e0;
+    padding: 8px 6px;
+    text-align: center;
+}
+#orders-table th {
+    background: #1976d2;
+    color: #fff;
+}
+#admin-logout {
+    background: #d32f2f;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto;
+    transition: background 0.2s;
+}
+#admin-logout:hover {
+    background: #a31515;
+} 
