@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
+const path = require('path');
 
 // 🔧 Corectare: am șters spațiile de la final în URL
 const supabaseUrl = 'https://jhspgxonaankhjjqkqgw.supabase.co'; // ✅ fără spații
@@ -12,7 +13,36 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); // Servește fișierele din 'public'
+app.use(express.static(path.join(__dirname, '..', 'frontend', 'public'))); // Servește fișierele din frontend/public
+
+// Middleware pentru logarea conexiunilor → DOAR pentru API și cereri care NU sunt fișiere
+app.use((req, res, next) => {
+  const ip = req.ip || req.socket.remoteAddress;
+  const userAgent = req.get('User-Agent') || 'Unknown';
+  const method = req.method;
+  const url = req.url;
+  const date = new Date().toLocaleString('ro-RO');
+
+  const browser = userAgent.includes('Chrome') ? 'Chrome' :
+                 userAgent.includes('Firefox') ? 'Firefox' :
+                 userAgent.includes('Safari') && !userAgent.includes('Chrome') ? 'Safari' :
+                 userAgent.includes('Edge') ? 'Edge' : 'Alt browser';
+
+  const os = userAgent.includes('Windows') ? 'Windows' :
+             userAgent.includes('Mac') ? 'macOS' :
+             userAgent.includes('Linux') ? 'Linux' :
+             userAgent.includes('Android') ? 'Android' :
+             userAgent.includes('iPhone') ? 'iOS' : 'Alt OS';
+
+  // 🟢 Loghează doar cererile API sau cele care nu sunt fișiere statice
+  if (!url.match(/\.(css|js|png|jpg|jpeg|gif|ico|svg|html)$/)) {
+    console.log(`\n🔌 [${date}] ${method} ${url}`);
+    console.log(`   🖥️  IP: ${ip.replace('::ffff:', '')}`);
+    console.log(`   🌐 Browser: ${browser} | OS: ${os}`);
+  }
+
+  next();
+});
 
 // Redirectare principală
 app.get('/', (req, res) => {
