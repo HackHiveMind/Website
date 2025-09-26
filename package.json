@@ -13,11 +13,22 @@
     "pg": "^8.16.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node backend/server.js"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:real": "NODE_ENV=test jest __tests__/server-real.test.js",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.8.0",
+    "jest": "^30.1.3",
+    "jsdom": "^27.0.0",
+    "puppeteer": "^24.22.3",
+    "supertest": "^7.1.4"
+  }
 }
