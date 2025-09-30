@@ -1,0 +1,8 @@
+﻿{
+  "items":[{"productId":1,"name":"Test","price":100,"quantity":1}],
+  "shipping":{"cost":10,"email":"client@test.ro"},
+  "customer":{"firstName":"Ion","lastName":"Popescu","email":"client@test.ro"},
+  "payment":{"method":"card"},
+  "date":"2025-09-30T10:00:00Z",
+  "cardNumber":"4111 1111 1111 1234"
+}
