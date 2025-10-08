@@ -3,36 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Toate comenzile</title>
-    <link rel="stylesheet" href="src/styles/admin.css">
+    <title>✨ Admin Dashboard - Inovator</title>
+    <link rel="stylesheet" href="styles/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="admin-container">
-        <h2>Admin - Toate comenzile</h2>
-        <form id="admin-login-form">
-            <input type="email" id="admin-email" placeholder="Email admin" required>
-            <input type="password" id="admin-password" placeholder="Parolă" required>
-            <button type="submit">Login</button>
-            <div id="admin-login-error" class="error-message"></div>
-        </form>
-        <div id="admin-orders-section" style="display:none;">
-            <h3>Comenzi înregistrate</h3>
-            <table id="orders-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Data</th>
-                        <th>Total</th>
-                        <th>Status</th>
-                        <th>Tracking</th>
-                        <th>Email client</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button id="admin-logout">Logout</button>
+    <!-- Particles Background -->
+    <div id="particles-container"></div>
+    
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <i class="fas fa-sun" id="theme-icon"></i>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="login-container glass-effect">
+            <div class="login-header">
+                <div class="logo-animation">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h2>Admin Dashboard</h2>
+                <p>Bun venit în viitor</p>
+            </div>
+            
+            <form id="admin-login-form" class="floating-form">
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="admin-email" placeholder="Email admin" required>
+                    <span class="input-highlight"></span>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="admin-password" placeholder="Parolă" required>
+                    <span class="input-highlight"></span>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <span class="btn-text">Login</span>
+                    <span class="btn-loader">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+                
+                <div id="admin-login-error" class="error-message"></div>
+            </form>
         </div>
     </div>
-    <script src="src/scripts/admin.js"></script>
+
+    <!-- Main Dashboard -->
+    <div id="admin-dashboard" class="dashboard-container" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-effect">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-rocket"></i>
+                    <span>Admin</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active" data-section="overview">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Overview</span>
+                        <div class="nav-indicator"></div>
+                    </li>
+                    <li class="nav-item" data-section="orders">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span>Comenzi</span>
+                        <div class="nav-indicator"></div>
+                    </li>
+                    <li class="nav-item" data-section="analytics">
+                        <i class="fas fa-chart-pie"></i>
+                        <span>Analytics</span>
+                        <div class="nav-indicator"></div>
+                    </li>
+                    <li class="nav-item" data-section="settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                        <div class="nav-indicator"></div>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button id="admin-logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-content">
+                    <h1>
+                        <span class="greeting" id="greeting">Bună dimineața</span>
+                        <span class="username">Admin</span>
+                    </h1>
+                    <div class="header-actions">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" placeholder="Caută...">
+                        </div>
+                        <div class="notification-bell">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge">3</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Sections -->
+            <div class="content-wrapper">
+                <!-- Overview Section -->
+                <section id="overview-section" class="content-section active">
+                    <div class="stats-grid">
+                        <div class="stat-card glass-effect" data-aos="fade-up">
+                            <div class="stat-icon revenue">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="total-revenue">0 RON</h3>
+                                <p>Venituri totale</p>
+                                <span class="stat-change positive">+12.5%</span>
+                            </div>
+                            <div class="stat-chart">
+                                <canvas id="revenue-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glass-effect" data-aos="fade-up" data-aos-delay="100">
+                            <div class="stat-icon orders">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="total-orders">0</h3>
+                                <p>Comenzi totale</p>
+                                <span class="stat-change positive">+8.2%</span>
+                            </div>
+                            <div class="stat-chart">
+                                <canvas id="orders-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glass-effect" data-aos="fade-up" data-aos-delay="200">
+                            <div class="stat-icon users">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="total-users">0</h3>
+                                <p>Utilizatori activi</p>
+                                <span class="stat-change negative">-2.1%</span>
+                            </div>
+                            <div class="stat-chart">
+                                <canvas id="users-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="stat-card glass-effect" data-aos="fade-up" data-aos-delay="300">
+                            <div class="stat-icon conversion">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="conversion-rate">0%</h3>
+                                <p>Rata conversie</p>
+                                <span class="stat-change positive">+5.7%</span>
+                            </div>
+                            <div class="stat-chart">
+                                <canvas id="conversion-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="charts-section">
+                        <div class="chart-container glass-effect">
+                            <h3>Venituri lunare</h3>
+                            <canvas id="main-chart"></canvas>
+                        </div>
+                        
+                        <div class="recent-activity glass-effect">
+                            <h3>Activitate recentă</h3>
+                            <div class="activity-list" id="activity-list">
+                                <!-- Activity items will be populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Orders Section -->
+                <section id="orders-section" class="content-section">
+                    <div class="section-header">
+                        <h2>Managementul comenzilor</h2>
+                        <div class="section-actions">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-plus"></i>
+                                Comandă nouă
+                            </button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-download"></i>
+                                Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="orders-container glass-effect">
+                        <div class="table-header">
+                            <div class="table-search">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Caută comenzi...">
+                            </div>
+                            <div class="table-filters">
+                                <select id="status-filter">
+                                    <option value="all">Toate statusurile</option>
+                                    <option value="pending">În așteptare</option>
+                                    <option value="completed">Completate</option>
+                                    <option value="cancelled">Anulate</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="table-wrapper">
+                            <table id="orders-table" class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Data</th>
+                                        <th>Client</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Acțiuni</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="table-pagination">
+                            <div class="pagination-info">
+                                Afișez <span id="showing-start">1</span>-<span id="showing-end">10</span> din <span id="total-orders-count">0</span> comenzi
+                            </div>
+                            <div class="pagination-controls">
+                                <button class="pagination-btn" id="prev-page">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <div class="pagination-numbers" id="pagination-numbers"></div>
+                                <button class="pagination-btn" id="next-page">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analytics Section -->
+                <section id="analytics-section" class="content-section">
+                    <h2>Analytics avansate</h2>
+                    <div class="analytics-grid">
+                        <div class="analytics-card glass-effect">
+                            <h3>Performanța produselor</h3>
+                            <canvas id="products-chart"></canvas>
+                        </div>
+                        
+                        <div class="analytics-card glass-effect">
+                            <h3>Distribuția geografică</h3>
+                            <div id="geo-map"></div>
+                        </div>
+                        
+                        <div class="analytics-card glass-effect">
+                            <h3>Comportamentul utilizatorilor</h3>
+                            <canvas id="behavior-chart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="settings-section" class="content-section">
+                    <h2>Setări sistem</h2>
+                    <div class="settings-grid">
+                        <div class="settings-card glass-effect">
+                            <h3>Preferințe generale</h3>
+                            <div class="setting-item">
+                                <label>Tema</label>
+                                <select>
+                                    <option>Auto</option>
+                                    <option>Light</option>
+                                    <option>Dark</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label>Limba</label>
+                                <select>
+                                    <option>Română</option>
+                                    <option>English</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card glass-effect">
+                            <h3>Notificări</h3>
+                            <div class="setting-toggle">
+                                <label>Email comenzi noi</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="email-notifications">
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </div>
+                            <div class="setting-toggle">
+                                <label>Alerte sistem</label>
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="system-alerts">
+                                    <span class="toggle-slider"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="scripts/admin.js"></script>
 </body>
 </html> 

@@ -1,14 +1,16 @@
-const{Client}=require('pg')
-const { host, user, port, password, database } = require('pg/lib/defaults.js')
+const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
-const con=new Client({
-    host: "localhost",
-    user: "supabase",
-    port: 5432,
-    password: "soimilor9",
-    database:"databases"
-})   
+// Inițializare client Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
-con.connect().then(()=> console.log("connected"))
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-module.exports = con; 
+if (supabaseUrl && supabaseKey) {
+    console.log("Database connected via Supabase");
+} else {
+    console.log("Database connection error: Missing Supabase configuration");
+}
+
+module.exports = supabase; 

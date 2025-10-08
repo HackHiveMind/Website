@@ -1,7 +1,7 @@
 const request = require('supertest');
 
 // Import serverul real (nu mock-uri)
-const app = require('../server');
+const app = require('../backend/server');
 
 describe('Real Server Tests', () => {
   
