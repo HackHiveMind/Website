@@ -131,7 +131,7 @@ describe('Project Structure', () => {
 
   test('should have required files', () => {
     const packageJsonPath = path.join(__dirname, '../package.json');
-    const serverJsPath = path.join(__dirname, '../server.js');
+    const serverJsPath = path.join(__dirname, '../backend/server.js');
     const jestConfigPath = path.join(__dirname, '../jest.config.js');
     
     expect(fs.existsSync(packageJsonPath)).toBe(true);

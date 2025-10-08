@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST DEBUG - Dashboard Stats</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .stat-item { text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+        .stat-value { font-size: 2em; font-weight: bold; color: #333; }
+        .stat-label { color: #666; margin-top: 5px; }
+        .debug-info { background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e9; color: #2e7d32; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        #console-log { height: 200px; overflow-y: auto; background: #000; color: #00ff00; padding: 10px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🔍 TEST DEBUG - Dashboard Statistics</h1>
+    
+    <div class="card">
+        <h2>📊 Statistici Dashboard</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value" id="total-revenue">Loading...</div>
+                <div class="stat-label">Venituri totale</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-orders">Loading...</div>
+                <div class="stat-label">Comenzi totale</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-users">Loading...</div>
+                <div class="stat-label">Utilizatori activi</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="conversion-rate">Loading...</div>
+                <div class="stat-label">Rata conversie</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🛠️ Controale Test</h2>
+        <button onclick="testLogin()">🔑 Test Login Admin</button>
+        <button onclick="testStatsAPI()">📊 Test API Stats Direct</button>
+        <button onclick="testFrontendLoad()">🔄 Test Frontend Load</button>
+        <button onclick="clearConsole()">🗑️ Clear Console</button>
+    </div>
+
+    <div class="card">
+        <h2>📋 Debug Info</h2>
+        <div id="debug-info" class="debug-info">
+            Inițializare...
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🖥️ Console Log</h2>
+        <div id="console-log"></div>
+    </div>
+
+    <script>
+        // Capture console.log
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function addToConsole(message, type = 'log') {
+            const consoleEl = document.getElementById('console-log');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff4444' : type === 'warn' ? '#ffaa00' : '#00ff00';
+            consoleEl.innerHTML += `<div style="color: ${color}">[${time}] ${message}</div>`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToConsole('ERROR: ' + args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToConsole('WARN: ' + args.join(' '), 'warn');
+        };
+
+        function updateDebugInfo(message, type = 'info') {
+            const debugEl = document.getElementById('debug-info');
+            const className = type === 'error' ? 'debug-info error' : type === 'success' ? 'debug-info success' : 'debug-info';
+            debugEl.className = className;
+            debugEl.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+        }
+
+        async function testLogin() {
+            updateDebugInfo('Testare login admin...', 'info');
+            
+            try {
+                const response = await fetch('/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.token) {
+                        localStorage.setItem('adminToken', data.token);
+                        updateDebugInfo('✅ Login reușit! Token salvat.', 'success');
+                        console.log('Token admin salvat:', data.token.substring(0, 20) + '...');
+                    } else {
+                        updateDebugInfo('❌ Login răspuns fără token', 'error');
+                    }
+                } else {
+                    updateDebugInfo(`❌ Login eșuat: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                updateDebugInfo(`❌ Eroare login: ${error.message}`, 'error');
+            }
+        }
+
+        async function testStatsAPI() {
+            updateDebugInfo('Testare API /admin/api/stats direct...', 'info');
+            
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                updateDebugInfo('❌ Nu există token admin. Faceți login primul.', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/api/stats', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('API Stats response status:', response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('API Stats data:', data);
+                    
+                    if (data.success && data.stats) {
+                        updateDebugInfo(`✅ API Stats reușit! Source: ${data.stats.source}`, 'success');
+                        
+                        // Update display
+                        document.getElementById('total-revenue').textContent = data.stats.totalRevenue.toLocaleString();
+                        document.getElementById('total-orders').textContent = data.stats.totalOrders;
+                        document.getElementById('total-users').textContent = data.stats.totalUsers;
+                        document.getElementById('conversion-rate').textContent = data.stats.conversionRate + '%';
+                        
+                    } else {
+                        updateDebugInfo('❌ API Stats răspuns invalid', 'error');
+                    }
+                } else {
+                    updateDebugInfo(`❌ API Stats eșuat: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                updateDebugInfo(`❌ Eroare API Stats: ${error.message}`, 'error');
+            }
+        }
+
+        function testFrontendLoad() {
+            updateDebugInfo('Testare încărcare frontend cu debugging...', 'info');
+            
+            // Test direct functions if available
+            if (typeof fetchDashboardStats === 'function') {
+                console.log('Testing fetchDashboardStats function...');
+                fetchDashboardStats().then(stats => {
+                    console.log('fetchDashboardStats result:', stats);
+                    updateDebugInfo(`✅ fetchDashboardStats reușit! Source: ${stats.source}`, 'success');
+                }).catch(error => {
+                    console.error('fetchDashboardStats error:', error);
+                    updateDebugInfo(`❌ fetchDashboardStats eșuat: ${error.message}`, 'error');
+                });
+            } else {
+                updateDebugInfo('❌ Funcția fetchDashboardStats nu este disponibilă', 'error');
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('console-log').innerHTML = '';
+        }
+
+        // Auto-initialize
+        window.addEventListener('load', () => {
+            console.log('🚀 Debug page loaded successfully');
+            updateDebugInfo('Pagină debug încărcată. Folosiți butoanele pentru testare.', 'success');
+        });
+    </script>
+</body>
+</html>

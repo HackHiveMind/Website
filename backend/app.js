@@ -1,9 +1,26 @@
-const{Client}=require('pg')
-const { host, user, port, password, database } = require('pg/lib/defaults.js')
+// Încărcare configurație din .env
+require('dotenv').config();
+
+const { createClient } = require('@supabase/supabase-js');
 const express = require('express');
 const app = express();
 const adminRoutes = require('./routes/admin');
 const path = require('path');
+
+// Inițializare client Supabase
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Verificare conexiune Supabase
+if (supabaseUrl && supabaseKey) {
+    console.log("Supabase client initialized successfully");
+} else {
+    console.log("Supabase configuration missing in .env");
+}
+
+// Exportare supabase client pentru folosire în rute
+app.locals.supabase = supabase;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json()); // pentru body JSON
@@ -11,15 +28,6 @@ app.use(express.json()); // pentru body JSON
 // Servire fișiere statice pentru admin (CSS, JS, etc)
 app.use('/admin/static', express.static(path.join(__dirname, 'admin/views')));
 
-const con=new Client({
-    host: "localhost",
-    user: "supabase",
-    port: 5432,
-    password: "soimilor9",
-    database:"databases"  
-})   
-
-con.connect().then(()=> console.log("connected"))
 app.use('/admin', adminRoutes);
 
 // Pornire server

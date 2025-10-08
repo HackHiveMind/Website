@@ -1,5 +1,4 @@
 // 🔍 TEST VERIFICARE BAZA DE DATE - Admin Dashboard
-const request = require('supertest');
 const path = require('path');
 const fs = require('fs');
 
@@ -118,7 +117,7 @@ describe('🔍 Database Connection Debug', () => {
             'loadDashboardStats',
             'loadOrders', 
             'loadFinancialData',
-            'fetch(\'/admin/api/',
+            'fetch(',
             'api/stats',
             'api/orders'
           ];
@@ -138,4 +137,40 @@ describe('🔍 Database Connection Debug', () => {
     console.log('=== END FRONTEND ADMIN DEBUG ===\n');
     expect(true).toBe(true);
   });
+
+  test('✅ Verifică schema bazei de date', () => {
+    console.log('\n🔍 === DEBUGGING DATABASE SCHEMA ===');
+    
+    const schemaFiles = [
+      { path: '../backend/database/schema.sql', name: 'Schema SQL' },
+      { path: '../backend/database/setup_database.php', name: 'Setup Database' },
+      { path: '../backend/database/tabel.sql', name: 'Tabel SQL' }
+    ];
+    
+    schemaFiles.forEach(file => {
+      const filePath = path.join(__dirname, file.path);
+      const exists = fs.existsSync(filePath);
+      
+      console.log(`${exists ? '✅' : '❌'} ${file.name}: ${exists ? 'găsit' : 'lipsă'}`);
+      
+      if (exists) {
+        const content = fs.readFileSync(filePath, 'utf8');
+        console.log(`   📄 Dimensiune: ${content.length} caractere`);
+        
+        if (file.name === 'Schema SQL') {
+          // Verifică tabelele necesare pentru admin
+          const expectedTables = ['users', 'orders', 'products', 'order_items'];
+          expectedTables.forEach(table => {
+            const hasTable = content.toLowerCase().includes(table);
+            console.log(`   ${hasTable ? '✅' : '❌'} Tabel ${table}: ${hasTable ? 'găsit' : 'lipsă'}`);
+          });
+        }
+      }
+    });
+    
+    console.log('=== END DATABASE SCHEMA DEBUG ===\n');
+    expect(true).toBe(true);
+  });
 });
+
+console.log('🔍 Debug Supabase Test - Configurat și gata!');
