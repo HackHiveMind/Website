@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
+const adminRoutes = require('./routes/admin');
 
 require('dotenv').config();
 // Supabase config din .env (fallback doar pentru dev local, recomandat să le elimini ulterior)
@@ -17,6 +18,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Content Security Policy pentru Developer Tools și resurse externe
 app.use((req, res, next) => {
@@ -26,13 +28,19 @@ app.use((req, res, next) => {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " +
     "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
     "img-src 'self' data: https:; " +
-    "connect-src 'self' http://localhost:3001 https://localhost:3001 http://192.168.51.41:3001 https://jhspgxonaankhjjqkqgw.supabase.co;"
+    "connect-src 'self' http://localhost:3000 https://localhost:3000 http://192.168.51.41:3000 https://jhspgxonaankhjjqkqgw.supabase.co;"
   );
   next();
 });
 
 // Servire fișiere statice din frontend cu MIME types corecte
-const serveStatic = express.static(path.join(__dirname, '..', 'frontend', 'public'));
+const serveHtml = express.static(path.join(__dirname, '..', 'frontend'), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.html')) {
+      res.setHeader('Content-Type', 'text/html');
+    }
+  }
+});
 const serveCss = express.static(path.join(__dirname, '..', 'frontend', 'styles'), {
   setHeaders: (res, path) => {
     if (path.endsWith('.css')) {
@@ -48,9 +56,12 @@ const serveJs = express.static(path.join(__dirname, '..', 'frontend', 'scripts')
   }
 });
 
-app.use(serveStatic); // Servește fișierele din frontend/public
+app.use(serveHtml); // Servește fișierele HTML din frontend/
 app.use('/styles', serveCss); // Servește CSS cu MIME type corect
 app.use('/scripts', serveJs); // Servește JS cu MIME type corect
+
+// Adaugă rutele de admin
+app.use('/admin', adminRoutes);
 
 // Middleware pentru logarea conexiunilor → DOAR pentru API și cereri care NU sunt fișiere
 app.use((req, res, next) => {
@@ -356,17 +367,7 @@ app.post('/api/checkout', async (req, res) => {
   }
 });
 
-// ✅ ÎNREGISTRARE RUTE ADMIN
-console.log('📂 Încărcare admin routes...');
-const adminRoutes = require('./routes/admin');
-console.log('✅ Admin routes încărcate cu succes!');
-app.use('/admin', adminRoutes);
-console.log('✅ Admin routes înregistrate pe /admin');
-
 // === PORNIM SERVERUL ===
-
-// ✅ PORT definit o singură dată
-const PORT = process.env.PORT || 3001;
 
 // Funcție pentru a găsi IP-ul local
 function getLocalIP() {
@@ -384,14 +385,16 @@ function getLocalIP() {
 }
 
 const localIp = getLocalIP();
+const PORT = process.env.PORT || 3000;
 
 // Pornim serverul doar dacă nu suntem în teste
 if (require.main === module) {
   // Pornim serverul pe 0.0.0.0 ca să fie accesibil în rețea
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`✅ Serverul pornește...`);
+    console.log(`✅ Serverul pornește pe portul ${PORT}...`);
+    console.log(`🏪 Store: http://localhost:${PORT}/store.html`);
+    console.log(`👤 Admin: http://localhost:${PORT}/admin/login`);
     console.log(`🌐 Accesează de pe alt dispozitiv: http://${localIp}:${PORT}`);
-    console.log(`Ex: http://${localIp}:${PORT} `);
     console.log(`ℹ️  Toate dispozitivele trebuie să fie pe aceeași rețea Wi-Fi.`);
   });
 }
