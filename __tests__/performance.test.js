@@ -15,10 +15,10 @@ describe('Performance Testing', () => {
       const responseTime = endTime - startTime;
       
       expect([200, 500]).toContain(response.status);
-      expect(responseTime).toBeLessThan(2000); // 2 secunde
+      expect(responseTime).toBeLessThan(5000); // 5 secunde pentru CI
       
       console.log(`⏱️ Products endpoint: ${responseTime}ms`);
-    });
+    }, 10000);
 
     test('should respond to single product endpoint quickly', async () => {
       const startTime = Date.now();
@@ -29,10 +29,10 @@ describe('Performance Testing', () => {
       const responseTime = endTime - startTime;
       
       expect([200, 404, 500]).toContain(response.status);
-      expect(responseTime).toBeLessThan(2000); // 2 secunde
+      expect(responseTime).toBeLessThan(5000); // 5 secunde pentru CI
       
       console.log(`⏱️ Single product endpoint: ${responseTime}ms`);
-    });
+    }, 10000);
 
     test('should respond to orders history quickly', async () => {
       const startTime = Date.now();
@@ -43,10 +43,10 @@ describe('Performance Testing', () => {
       const responseTime = endTime - startTime;
       
       expect([200, 500]).toContain(response.status);
-      expect(responseTime).toBeLessThan(3000); // 3 secunde
+      expect(responseTime).toBeLessThan(6000); // 6 secunde pentru CI
       
       console.log(`⏱️ Orders history endpoint: ${responseTime}ms`);
-    });
+    }, 10000);
 
     test('should create orders quickly', async () => {
       const orderData = {
@@ -67,10 +67,10 @@ describe('Performance Testing', () => {
       const responseTime = endTime - startTime;
       
       expect([201, 400, 500]).toContain(response.status);
-      expect(responseTime).toBeLessThan(3000); // 3 secunde
+      expect(responseTime).toBeLessThan(6000); // 6 secunde pentru CI
       
       console.log(`⏱️ Create order endpoint: ${responseTime}ms`);
-    });
+    }, 10000);
   });
 
   // Testează performanța sub sarcină

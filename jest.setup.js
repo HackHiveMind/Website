@@ -8,6 +8,14 @@ if (typeof global.TextEncoder === 'undefined') {
   global.TextDecoder = TextDecoder;
 }
 
+// Polyfill pentru fetch (necesar pentru jsdom)
+if (typeof global.fetch !== 'function') {
+  global.fetch = require('node-fetch');
+  global.Headers = require('node-fetch').Headers;
+  global.Request = require('node-fetch').Request;
+  global.Response = require('node-fetch').Response;
+}
+
 // Polyfill pentru crypto (necesar pentru testele admin)
 if (typeof global.crypto === 'undefined') {
   global.crypto = require('crypto').webcrypto || require('crypto');
