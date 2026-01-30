@@ -102,6 +102,56 @@ app.get('/favicon.ico', (req, res) => {
   res.status(204).end();
 });
 
+// === VALIDATION HELPERS ===
+
+/**
+ * Validează payload-ul comenzilor (items, shipping, payment)
+ * @param {Object} payload - Obiectul cu datele comenzii
+ * @returns {Object} { valid: boolean, errors: string[] }
+ */
+function validateOrderPayload(payload) {
+  const errors = [];
+
+  // Validare items
+  if (!payload.items || !Array.isArray(payload.items) || payload.items.length === 0) {
+    errors.push('Comanda trebuie să conțină cel puțin un produs.');
+  } else {
+    payload.items.forEach((item, index) => {
+      if (!item.name || typeof item.name !== 'string' || item.name.trim().length === 0) {
+        errors.push(`Item ${index + 1}: Numele produsului este obligatoriu.`);
+      }
+      if (item.price == null || typeof item.price !== 'number' || item.price < 0) {
+        errors.push(`Item ${index + 1}: Prețul trebuie să fie un număr pozitiv.`);
+      }
+      if (item.quantity == null || !Number.isInteger(item.quantity) || item.quantity <= 0) {
+        errors.push(`Item ${index + 1}: Cantitatea trebuie să fie un număr întreg pozitiv.`);
+      }
+    });
+  }
+
+  // Validare shipping (opțional, dar verificăm structura dacă există)
+  if (payload.shipping) {
+    if (payload.shipping.cost != null && (typeof payload.shipping.cost !== 'number' || payload.shipping.cost < 0)) {
+      errors.push('Costul de transport trebuie să fie un număr pozitiv.');
+    }
+  }
+
+  // Validare payment (opțional, dar verificăm structura dacă există)
+  if (payload.payment) {
+    if (payload.payment.method && typeof payload.payment.method !== 'string') {
+      errors.push('Metoda de plată trebuie să fie un șir de caractere.');
+    }
+    if (payload.payment.total != null && (typeof payload.payment.total !== 'number' || payload.payment.total < 0)) {
+      errors.push('Totalul plății trebuie să fie un număr pozitiv.');
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
 // === API ENDPOINTS ===
 
 // GET: Toate produsele
@@ -182,10 +232,12 @@ app.post('/api/orders', async (req, res) => {
 
     const { items, shipping, payment, date } = req.body;
 
-    // Verifică dacă array-ul de items este gol
-    if (!Array.isArray(items) || items.length === 0) {
+    // Validare detaliată cu funcția validateOrderPayload
+    const validation = validateOrderPayload({ items, shipping, payment });
+    if (!validation.valid) {
       return res.status(400).json({
-        message: 'Comanda trebuie să conțină cel puțin un produs.'
+        message: 'Date invalide pentru comandă.',
+        errors: validation.errors
       });
     }
     const shippingObj = shipping || {};
@@ -300,8 +352,13 @@ app.post('/api/checkout', async (req, res) => {
 
     const { items, shipping, payment } = req.body;
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ message: 'Coșul de cumpărături este gol.' });
+    // Validare detaliată cu funcția validateOrderPayload
+    const validation = validateOrderPayload({ items, shipping, payment });
+    if (!validation.valid) {
+      return res.status(400).json({
+        message: 'Date invalide pentru checkout.',
+        errors: validation.errors
+      });
     }
 
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);

@@ -152,17 +152,25 @@ class CheckoutManager {
         input.classList.toggle('invalid', !isValid);
         
         // Formatare specială pentru câmpuri specifice
-        switch (input.id) {
+        const fieldId = input.id || '';
+        switch (fieldId) {
             case 'cardNumber':
+            case 'card-number':
                 input.value = this.formatCardNumber(input.value);
                 break;
             case 'expiryDate':
+            case 'expiry':
+            case 'expiry-date':
                 input.value = this.formatExpiryDate(input.value);
                 break;
             case 'cvv':
+            case 'cvv-code':
                 input.value = this.formatCVV(input.value);
                 break;
             case 'zipCode':
+            case 'zip':
+            case 'postalCode':
+            case 'postal-code':
                 input.value = input.value.replace(/\D/g, '').substr(0, 5);
                 break;
         }

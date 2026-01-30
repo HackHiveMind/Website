@@ -401,7 +401,10 @@
         <div class="checkout-content">
             <div class="cart-items">
                 <div id="cart-items-container">
-                    <!-- Cart items will be loaded here -->
+                    <div style="padding: 20px; background: #f0f0f0; border-radius: 8px;">
+                        <h3>🔄 Loading cart items...</h3>
+                        <p>If this message persists, cart might be empty or there's a loading issue.</p>
+                    </div>
                 </div>
             </div>
             
@@ -504,9 +507,19 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            console.log('🛒 Cart loaded from localStorage:', cart);
+            console.log('🛒 Cart length:', cart.length);
+            
             const cartItemsContainer = document.getElementById('cart-items-container');
             const orderSummary = document.getElementById('order-summary');
             const applePayButton = document.getElementById('apple-pay-button');
+            
+            if (!cartItemsContainer) {
+                console.error('❌ cart-items-container element not found!');
+                return;
+            }
+            
+            console.log('✅ cart-items-container found:', cartItemsContainer);
             
             // Apple Pay Configuration
             const applePayConfig = {
@@ -615,60 +628,72 @@
                 });
             }
 
-            // Initialize Apple Pay when page loads
-            initializeApplePay();
-
+            // ===== RENDER CART ITEMS FIRST (before Apple Pay initialization) =====
+            console.log('📦 Checking if cart is empty...');
             if (cart.length === 0) {
+                console.log('⚠️ Cart is empty - showing empty cart message');
                 cartItemsContainer.innerHTML = `
                     <div class="empty-cart">
                         <svg viewBox="0 0 24 24">
                             <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
                         </svg>
                         <p>Your cart is empty</p>
-                        <a href="index.html" class="continue-shopping">Continue Shopping</a>
+                        <a href="store.html" class="continue-shopping">Continue Shopping</a>
                     </div>
                 `;
-                return;
+            } else {
+                // Render cart items
+                console.log('✅ Cart has items - rendering...');
+                console.log('Items to render:', cart);
+                cartItemsContainer.innerHTML = cart.map(item => `
+                    <div class="cart-item" data-id="${item.id}">
+                        <img src="${item.image || 'https://placehold.co/100x100/f0f0f0/cccccc?text=No+Image'}" alt="${item.name}">
+                        <div class="cart-item-info">
+                            <h3>${item.name}</h3>
+                            ${item.color ? `<p>Color: ${item.color}</p>` : ''}
+                            <p>${item.description || ''}</p>
+                            <p class="cart-item-price">$${parseFloat(item.price).toFixed(2)}</p>
+                        </div>
+                        <div class="cart-item-quantity">
+                            <button class="quantity-btn" onclick="updateQuantity('${item.id}', -1)">-</button>
+                            <span>${item.quantity}</span>
+                            <button class="quantity-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Calculate and display order summary
+                const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+                const shipping = 10;
+                const total = subtotal + shipping;
+                
+                if (orderSummary) {
+                    orderSummary.innerHTML = `
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span>$${subtotal.toFixed(2)}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Shipping</span>
+                            <span>$${shipping.toFixed(2)}</span>
+                        </div>
+                        <div class="summary-row total-row">
+                            <span>Total</span>
+                            <span>$${total.toFixed(2)}</span>
+                        </div>
+                    `;
+                }
+                
+                console.log('✅ Cart items rendered successfully!');
             }
-            
-            // Render cart items
-            cartItemsContainer.innerHTML = cart.map(item => `
-                <div class="cart-item" data-id="${item.id}">
-                    <img src="${item.image || 'https://placehold.co/100x100/f0f0f0/cccccc?text=No+Image'}" alt="${item.name}">
-                    <div class="cart-item-info">
-                        <h3>${item.name}</h3>
-                        ${item.color ? `<p>Color: ${item.color}</p>` : ''}
-                        <p>${item.description || ''}</p>
-                        <p class="cart-item-price">$${parseFloat(item.price).toFixed(2)}</p>
-                    </div>
-                    <div class="cart-item-quantity">
-                        <button class="quantity-btn" onclick="updateQuantity('${item.id}', -1)">-</button>
-                        <span>${item.quantity}</span>
-                        <button class="quantity-btn" onclick="updateQuantity('${item.id}', 1)">+</button>
-                    </div>
-                </div>
-            `).join('');
-            
-            // Calculate and display order summary
-            const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
-            const shipping = 10;
-            const total = subtotal + shipping;
-            
-            orderSummary.innerHTML = `
-                <div class="summary-row">
-                    <span>Subtotal</span>
-                    <span>$${subtotal.toFixed(2)}</span>
-                </div>
-                <div class="summary-row">
-                    <span>Shipping</span>
-                    <span>$${shipping.toFixed(2)}</span>
-                </div>
-                <div class="summary-row total-row">
-                    <span>Total</span>
-                    <span>$${total.toFixed(2)}</span>
-                </div>
-            `;
-            
+
+            // Initialize Apple Pay AFTER rendering cart (wrapped in try-catch to prevent errors)
+            try {
+                initializeApplePay();
+            } catch (error) {
+                console.warn('⚠️ Apple Pay initialization failed (this is OK on localhost):', error);
+            }
+
             // Handle form submission
             document.getElementById('checkout-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -676,6 +701,11 @@
                 const submitButton = e.target.querySelector('.checkout-btn');
                 submitButton.classList.add('loading');
                 submitButton.disabled = true;
+                
+                // Calculate totals
+                const subtotal = cart.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+                const shipping = 10; // Fixed shipping cost
+                const total = subtotal + shipping;
                 
                 try {
                     const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
@@ -724,7 +754,7 @@
                         console.log('Sending order data:', orderData);
 
                         // Trimitem cererea POST către backend
-                        const response = await fetch('http://localhost:3001/api/checkout', {
+                        const response = await fetch('http://localhost:3000/api/checkout', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'

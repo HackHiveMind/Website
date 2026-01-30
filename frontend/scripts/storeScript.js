@@ -382,17 +382,21 @@
         }
 
         function updateCartCount(animate) {
-            const cartCountElement = document.querySelector('.cart-count');
-            if (cartCountElement) {
-                const currentCart = JSON.parse(localStorage.getItem('cart')) || [];
-                const totalItems = currentCart.reduce((sum, item) => sum + item.quantity, 0);
-                
+            const cartCountElements = document.querySelectorAll('.cart-count');
+            if (cartCountElements.length === 0) return;
+            
+            const currentCart = JSON.parse(localStorage.getItem('cart')) || [];
+            const totalItems = currentCart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            console.log('📊 Updating cart count:', totalItems, 'items');
+            
+            cartCountElements.forEach(cartCountElement => {
                 if (totalItems > 0) {
                     cartCountElement.textContent = totalItems;
-                    cartCountElement.style.display = 'flex'; // Afisam elementul
+                    cartCountElement.style.display = 'flex';
                 } else {
-                    cartCountElement.textContent = '0'; // Optionally keep 0, or just let it be empty if hidden by CSS
-                    cartCountElement.style.display = 'none'; // Ascundem elementul
+                    cartCountElement.textContent = '0';
+                    cartCountElement.style.display = 'none';
                 }
 
                 if (animate) {
@@ -401,7 +405,7 @@
                         cartCountElement.classList.remove('animate');
                     }, { once: true });
                 }
-            }
+            });
         }
 
         // Adaugăm event listener pentru butoanele "Add to Cart" dinamic
