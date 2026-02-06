@@ -22,7 +22,6 @@ describe('⚡ FRONTEND JAVASCRIPT FUNCTIONALITY TESTS', () => {
             
             dom = new JSDOM(storeHtml, {
                 pretendToBeVisual: true,
-                resources: "usable",
                 runScripts: "dangerously"
             });
             
@@ -33,6 +32,12 @@ describe('⚡ FRONTEND JAVASCRIPT FUNCTIONALITY TESTS', () => {
             const scriptElement = document.createElement('script');
             scriptElement.textContent = storeScript;
             document.head.appendChild(scriptElement);
+        });
+
+        afterAll(() => {
+            if (dom) {
+                dom.window.close();
+            }
         });
 
         test('✅ Store - Funcții de bază definite', () => {
@@ -81,8 +86,7 @@ describe('⚡ FRONTEND JAVASCRIPT FUNCTIONALITY TESTS', () => {
             const checkoutHtml = fs.readFileSync(path.join(frontendPath, 'checkout.html'), 'utf8');
             
             dom = new JSDOM(checkoutHtml, {
-                pretendToBeVisual: true,
-                resources: "usable"
+                pretendToBeVisual: true
             });
             
             document = dom.window.document;
@@ -95,6 +99,12 @@ describe('⚡ FRONTEND JAVASCRIPT FUNCTIONALITY TESTS', () => {
                 removeItem: jest.fn(),
                 clear: jest.fn()
             };
+        });
+
+        afterAll(() => {
+            if (dom) {
+                dom.window.close();
+            }
         });
 
         test('✅ Checkout - Script structure and functions', () => {
@@ -144,8 +154,7 @@ describe('⚡ FRONTEND JAVASCRIPT FUNCTIONALITY TESTS', () => {
             const loginHtml = fs.readFileSync(path.join(frontendPath, 'login.html'), 'utf8');
             
             dom = new JSDOM(loginHtml, {
-                pretendToBeVisual: true,
-                resources: "usable"
+                pretendToBeVisual: true
             });
             
             document = dom.window.document;
@@ -159,6 +168,12 @@ describe('⚡ FRONTEND JAVASCRIPT FUNCTIONALITY TESTS', () => {
                 removeItem: jest.fn(),
                 clear: jest.fn()
             };
+        });
+
+        afterAll(() => {
+            if (dom) {
+                dom.window.close();
+            }
         });
 
         test('✅ Login - Authentication functions', () => {

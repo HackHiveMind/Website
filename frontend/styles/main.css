@@ -535,3 +535,24 @@ footer {
         stroke-dashoffset: -124;
     }
 }
+
+/* Tablet & Desktop Enhancements */
+@media (max-width: 1024px) {
+    .nav-content {
+        padding: 0 16px;
+    }
+
+    .product-grid {
+        gap: 24px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .nav-content {
+        max-width: 1100px;
+    }
+
+    .product-grid {
+        max-width: 1300px;
+    }
+}

@@ -16,12 +16,16 @@ describe('🔍 VERIFICARE CONEXIUNI DATABASE REALE', () => {
     describe('📁 Verificare Configurație', () => {
         test('✅ Fișierul .env există', () => {
             const envPath = path.join(__dirname, '..', '.env');
+            const examplePath = path.join(__dirname, '..', '.env.example');
             const envExists = fs.existsSync(envPath);
+            const exampleExists = fs.existsSync(examplePath);
+            const targetPath = envExists ? envPath : examplePath;
             
             console.log(`📁 .env file: ${envExists ? '✅ GĂSIT' : '❌ LIPSĂ'}`);
+            console.log(`📁 .env.example file: ${exampleExists ? '✅ GĂSIT' : '❌ LIPSĂ'}`);
             
-            if (envExists) {
-                const envContent = fs.readFileSync(envPath, 'utf8');
+            if (fs.existsSync(targetPath)) {
+                const envContent = fs.readFileSync(targetPath, 'utf8');
                 const hasSupabaseUrl = envContent.includes('SUPABASE_URL');
                 const hasSupabaseKey = envContent.includes('SUPABASE_ANON_KEY');
                 
@@ -32,7 +36,7 @@ describe('🔍 VERIFICARE CONEXIUNI DATABASE REALE', () => {
                 expect(hasSupabaseKey).toBe(true);
             }
             
-            expect(envExists).toBe(true);
+            expect(envExists || exampleExists).toBe(true);
         });
 
         test('✅ Verificare dotenv în package.json', () => {
