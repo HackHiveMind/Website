@@ -309,15 +309,17 @@ app.get('/api/orders/history', async (req, res) => {
 
     if (error) throw error;
 
-    console.log('\n=== DETALII COMENZI ===');
-    orders.forEach(order => {
-      console.log(`\nComanda #${order.order_id}:`);
-      console.log(`Data: ${new Date(order.order_date).toLocaleString()}`);
-      console.log(`Total: ${order.total_amount} RON`);
-      console.log(`Metoda de plată: ${order.payment_method}`);
-      console.log(`Status: ${order.status}`);
-      console.log('------------------------');
-    });
+    if (process.env.NODE_ENV !== 'test' && !process.env.CI) {
+      console.log('\n=== DETALII COMENZI ===');
+      orders.forEach(order => {
+        console.log(`\nComanda #${order.order_id}:`);
+        console.log(`Data: ${new Date(order.order_date).toLocaleString()}`);
+        console.log(`Total: ${order.total_amount} RON`);
+        console.log(`Metoda de plată: ${order.payment_method}`);
+        console.log(`Status: ${order.status}`);
+        console.log('------------------------');
+      });
+    }
 
     const ordersHistory = orders.map(order => ({
       orderId: order.order_id,

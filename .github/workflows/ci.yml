@@ -28,10 +28,64 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
+    - name: Setup environment variables
+      run: |
+        echo "Setting up .env file for tests..."
+        cat > .env << EOF
+        SUPABASE_URL=${{ secrets.SUPABASE_URL || 'https://jhspgxonaankhjjqkqgw.supabase.co' }}
+        SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impoc3BneG9uYWFua2hqanFrcWd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY3MzI0MjQsImV4cCI6MjA3MjMwODQyNH0.doxG6-PqF8uicyVyR6fuFFV410w8AzQ9iukfxHoyN64' }}
+        PORT=3000
+        NODE_ENV=test
+        EMAIL_USER=test@example.com
+        EMAIL_PASS=test-password
+        GPT5_ENABLED=false
+        EOF
+        echo "✅ Environment variables configured"
+    
+    - name: Start backend server
+      run: |
+        echo "Starting backend server on port 3000..."
+        nohup node backend/server.js > server.log 2>&1 &
+        echo $! > server.pid
+        echo "Waiting for server to be ready..."
+        sleep 3
+        for i in {1..60}; do
+          if curl -s http://localhost:3000/api/products > /dev/null 2>&1; then
+            echo "✅ Server is ready after ${i} seconds!"
+            sleep 2
+            break
+          fi
+          if [ $i -eq 60 ]; then
+            echo "❌ Server failed to start within 60 seconds"
+            echo "=== Last 50 lines of server log ==="
+            tail -50 server.log
+            exit 1
+          fi
+          if [ $((i % 10)) -eq 0 ]; then
+            echo "Waiting... ($i/60)"
+          fi
+          sleep 1
+        done
+    
     - name: Run tests
-      run: npm test
+      run: npm test -- --runInBand --silent
       env:
         CI: true
+        NODE_ENV: test
+    
+    - name: Show server logs on failure
+      if: failure()
+      run: |
+        echo "=== Server Logs ==="
+        cat server.log || echo "No server logs found"
+    
+    - name: Stop backend server
+      if: always()
+      run: |
+        if [ -f server.pid ]; then
+          kill $(cat server.pid) || true
+          rm server.pid
+        fi
     
     - name: Upload coverage reports
       if: matrix.node-version == '20.x'
