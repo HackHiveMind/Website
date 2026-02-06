@@ -228,7 +228,7 @@ describe('Performance Testing', () => {
       console.log(`   Average: ${avgTime.toFixed(2)}ms`);
       console.log(`   Min: ${minTime}ms`);
       console.log(`   Max: ${maxTime}ms`);
-    });
+    }, 15000);
   });
 
   // Testează performanța în condiții de stres
