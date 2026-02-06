@@ -68,7 +68,7 @@ jobs:
         done
     
     - name: Run tests
-      run: npm test
+      run: npm test -- --runInBand --silent
       env:
         CI: true
         NODE_ENV: test
