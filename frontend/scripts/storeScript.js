@@ -253,7 +253,9 @@
                 if (!response.ok) {
                     throw new Error('Network response was not ok ' + response.statusText);
                 }
-                productsFromAPI = await response.json();
+                const data = await response.json();
+                // Extrage array-ul de produse din response
+                productsFromAPI = data.products || data || [];
                 console.log('Produse preluate de la API:', productsFromAPI);
 
                 // Inițial, afișăm toate produsele preluate de la API
@@ -279,14 +281,19 @@
             productsToRender.forEach(product => {
                 const productCard = document.createElement('div');
                 productCard.classList.add('grid-item');
+                const productId = product.id || product.product_id;
+                const productImage = product.image || product.image_url || '';
+                const productName = product.name || 'Product';
+                const productPrice = parseFloat(product.price || 0).toFixed(2);
+                const productHref = productId ? `product.html?id=${productId}` : '#';
                 // Facem întregul card un link către pagina produsului
                 productCard.innerHTML = `
-                    <a href="product.html?id=${product.product_id}" class="product-card-link">
-                        <img src="${product.image_url}" alt="${product.name}" class="product-image"/>
-                        <h2 class="product-item-name">${product.name}</h2>
-                        <p class="product-price">$${parseFloat(product.price).toFixed(2)}</p>
+                    <a href="${productHref}" class="product-card-link">
+                        <img src="${productImage}" alt="${productName}" class="product-image"/>
+                        <h2 class="product-item-name">${productName}</h2>
+                        <p class="product-price">$${productPrice}</p>
                     </a>
-                    <button class="add-to-cart" data-product-id="${product.product_id}">Add to Cart</button>
+                    <button class="add-to-cart" data-product-id="${productId || ''}">Add to Cart</button>
                 `;
                 productsContainer.appendChild(productCard);
             });
@@ -413,7 +420,7 @@
         document.addEventListener('click', (event) => {
             if (event.target.classList.contains('add-to-cart')) {
                 const productId = event.target.dataset.productId;
-                const product = productsFromAPI.find(p => p.product_id == productId); // Folosim productsFromAPI
+                const product = productsFromAPI.find(p => (p.id || p.product_id) == productId); // Folosim productsFromAPI
                 if (product) {
                     addToCart(product);
                     // Adaugă clasa de succes vizuală (opțional)

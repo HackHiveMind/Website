@@ -13735,3 +13735,5 @@ Git/
 node.js/
 xampp/
 
+.vercel
+.env*.local
