@@ -1,7 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "echo 'No build needed'",
-  "outputDirectory": "frontend",
+  "builds": [
+    {
+      "src": "api/[...slug].js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
   "routes": [
     {
       "src": "^/api/(.*)",
