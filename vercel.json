@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/[...slug].js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "frontend/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "^/api/(.*)",
+      "dest": "/api/[...slug]"
+    },
+    {
+      "src": "^/admin(?:/.*)?$",
+      "dest": "/admin.html"
+    },
+    {
+      "src": "^/$",
+      "dest": "/store.html"
+    },
+    {
+      "src": "^/(styles|scripts|pages)/(.*)$",
+      "dest": "/$1/$2"
+    },
+    {
+      "src": "^/([^./]+)$",
+      "dest": "/$1.html"
+    },
+    {
+      "src": "^/(.*)$",
+      "dest": "/$1"
+    }
+  ],
+  "functions": {
+    "api/[...slug].js": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  }
+}
